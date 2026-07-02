@@ -1,8 +1,7 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 import { DunetaAppProviders } from '@duneta/client/providers';
-import '@duneta/client/themes/globals.css';
+import '~/themes/globals.css';
 
-/** Document shell — HTML, meta, scripts. No route providers here. */
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>

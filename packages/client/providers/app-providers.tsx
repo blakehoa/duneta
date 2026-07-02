@@ -1,21 +1,24 @@
 import type { ReactNode } from 'react';
-import { DunetaToast } from '../components/DunetaToast/DunetaToast.js';
 import { DunetaQueryProvider } from './query-provider.js';
 import { DunetaThemeProvider } from './theme-provider.js';
+import { QueryClient } from '@tanstack/react-query';
+import { DunetaThemeMode } from '../configs/types.js';
 
 export type DunetaAppProvidersProps = {
   children: ReactNode;
-  defaultTheme?: 'dark' | 'light' | 'system';
+  theme: DunetaThemeMode;
+  queryClient?: QueryClient;
 };
 
-export function DunetaAppProviders({ children, defaultTheme = 'light' }: DunetaAppProvidersProps) {
+/** Default app provider stack kept intentionally minimal. */
+export function DunetaAppProviders({
+  children,
+  theme = 'light',
+  queryClient,
+}: DunetaAppProvidersProps) {
   return (
-    <DunetaQueryProvider>
-      <DunetaThemeProvider defaultTheme={defaultTheme}>
-        <DunetaToast.Provider>
-          {children}
-        </DunetaToast.Provider>
-      </DunetaThemeProvider>
-    </DunetaQueryProvider>
+    <DunetaThemeProvider defaultTheme={theme}>
+      <DunetaQueryProvider client={queryClient}>{children}</DunetaQueryProvider>
+    </DunetaThemeProvider>
   );
 }

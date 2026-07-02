@@ -32,6 +32,3 @@ export function dunetaFieldError<TFieldValues extends FieldValues>(
   const error = form.formState.errors[name];
   return error?.message as string | undefined;
 }
-
-/** @deprecated Use `dunetaFieldError` */
-export const fieldError = dunetaFieldError;

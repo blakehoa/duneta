@@ -59,8 +59,7 @@ export function syncRouters(webRoot, clientRoot, webConfig) {
         .readFileSync(src, 'utf8')
         .replace(/@duneta\/client\/themes\/globals\.css/g, '~/themes/globals.css')
         .replace(/defaultTheme="[^"]*"/, `defaultTheme="${theme}"`);
-      const withInit = rel === 'layout.tsx' ? `${INIT_IMPORT}${content}` : content;
-      fs.writeFileSync(dest, withInit);
+      fs.writeFileSync(dest, content);
       continue;
     }
 
@@ -69,15 +68,22 @@ export function syncRouters(webRoot, clientRoot, webConfig) {
 
   const layoutFile = path.join(outDir, 'layout.tsx');
   if (!fs.existsSync(layoutFile)) {
-    throw new Error('A root layout.tsx is required in pages/ (starter/routers or app/pages).');
+    throw new Error('A root layout.tsx is required (starter/routers or app/pages).');
   }
 
-  fs.copyFileSync(layoutFile, path.join(outDir, 'root.tsx'));
+  writeRootTsx(outDir);
 
   const routesTs = generateRoutesTs(outDir);
   fs.writeFileSync(path.join(outDir, 'routes.ts'), routesTs);
 
   return outDir;
+}
+
+function writeRootTsx(outDir) {
+  const content = `${INIT_IMPORT}export { Layout } from './layout';
+export { default } from './layout';
+`;
+  fs.writeFileSync(path.join(outDir, 'root.tsx'), content);
 }
 
 function collectRouteFiles(baseDir, relDir, merged, source) {

@@ -146,25 +146,24 @@ function HealthSsr() {
 const createPost = useHttpMutation({ path: '/posts', method: 'POST' });
 ```
 
-Starter layout uses `DunetaAppProviders` from `@duneta/client/providers` (Query + Theme + Toast).
+Starter routers use a single root file: `layout.tsx` (document + providers + `Outlet`). See [web routes](../web/routes.md).
 
 ## Providers (`@duneta/client/providers`)
 
 ```tsx
-import {
-  DunetaAppProviders,
-  DunetaQueryProvider,
-  DunetaThemeProvider,
-} from '@duneta/client/providers';
+import { DunetaAppProviders, DunetaThemeProvider } from '@duneta/client/providers';
 ```
 
 | Export | Mô tả |
 |--------|------|
-| `DunetaAppProviders` | Query + Theme + Toast — dùng ở root layout |
-| `DunetaQueryProvider` | Client QueryClient + hydrate SSR cache |
-| `DunetaThemeProvider` | Dark/light theme (next-themes) |
+| `DunetaAppProviders` | Default app providers stack |
+| `DunetaQueryProvider` | QueryClient + SSR hydrate |
+| `DunetaThemeProvider` | next-themes provider (`useTheme`) |
 
-`ThemeProvider` vẫn export (alias deprecated).
+```text
+layout.tsx   → {children} + Scripts
+layout.tsx   → DunetaAppProviders → Outlet → page
+```
 
 ## Form (`@duneta/client/form`)
 

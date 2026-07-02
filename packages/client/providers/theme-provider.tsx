@@ -1,12 +1,16 @@
-import type { ThemeMode } from '../configs/types.js';
+import type { DunetaThemeMode } from '../configs/types.js';
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import type { PropsWithChildren } from 'react';
 
 export type DunetaThemeProviderProps = PropsWithChildren<{
-  defaultTheme?: ThemeMode;
+  defaultTheme: DunetaThemeMode;
 }>;
 
-export function DunetaThemeProvider({ children, defaultTheme = 'dark' }: DunetaThemeProviderProps) {
+/** Client-only theme context (`useTheme`) + initial theme script via next-themes. */
+export function DunetaThemeProvider({
+  children,
+  defaultTheme,
+}: DunetaThemeProviderProps) {
   return (
     <NextThemesProvider
       attribute="class"
@@ -17,6 +21,3 @@ export function DunetaThemeProvider({ children, defaultTheme = 'dark' }: DunetaT
     </NextThemesProvider>
   );
 }
-
-/** @deprecated Use `DunetaThemeProvider` */
-export const ThemeProvider = DunetaThemeProvider;

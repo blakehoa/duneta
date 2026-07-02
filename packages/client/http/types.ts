@@ -11,7 +11,6 @@ export type HttpServiceOptions = {
   defaultHeaders?: HeadersInit;
   credentials?: RequestCredentials;
   transport?: import('./transport.js').HttpTransport;
-  /** @deprecated Use `transport` — `createFetchTransport(fetch)` */
   fetch?: typeof fetch;
   csrf?: {
     cookie?: string;

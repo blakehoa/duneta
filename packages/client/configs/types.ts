@@ -1,4 +1,14 @@
-export type ThemeMode = 'dark' | 'light' | 'system';
+export const DUNETA_THEME_MODES_DEFAULT = ['light', 'dark', 'system'] as const;
+
+export type DunetaThemeModeDefault =
+  (typeof DUNETA_THEME_MODES_DEFAULT)[number];
+
+export type DunetaThemeConfig<
+  TModes extends readonly string[] = typeof DUNETA_THEME_MODES_DEFAULT,
+> = {
+  available: TModes;
+  default: TModes[number];
+};
 
 /** Web image display — `DunetaImage` srcset widths and default quality. */
 export type ImageConfig = {
@@ -27,9 +37,9 @@ export type DunetaWebConfig = {
       streamTimeout: number;
     };
   };
-  theme: {
-    default: ThemeMode;
-  };
+  theme: DunetaThemeConfig;
   locale: LocaleConfig;
   image: ImageConfig;
 };
+
+export type DunetaThemeMode = DunetaWebConfig['theme']['default'];

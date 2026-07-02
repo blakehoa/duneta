@@ -1,4 +1,4 @@
-import type { DunetaWebConfig } from './types';
+import { DUNETA_THEME_MODES_DEFAULT, type DunetaWebConfig } from './types';
 
 export function createDefaultConfig(): DunetaWebConfig {
   return {
@@ -17,6 +17,7 @@ export function createDefaultConfig(): DunetaWebConfig {
       },
     },
     theme: {
+      available: [...DUNETA_THEME_MODES_DEFAULT],
       default: 'light',
     },
     locale: {
