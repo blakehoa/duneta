@@ -1,4 +1,10 @@
-import { useState, type Dispatch, type SetStateAction } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 
 /**
  * Panel draft state: copies `applied` into draft whenever the popover opens.
@@ -9,14 +15,15 @@ export function useDraftOnOpen<T>(
   applied: T,
 ): [T, Dispatch<SetStateAction<T>>] {
   const [draft, setDraft] = useState(applied);
-  const [syncKey, setSyncKey] = useState({ open, applied });
+  const wasOpenRef = useRef(open);
 
-  if (open && (syncKey.open !== open || syncKey.applied !== applied)) {
-    setSyncKey({ open, applied });
-    setDraft(applied);
-  } else if (!open && syncKey.open) {
-    setSyncKey({ open, applied });
-  }
+  // Sync applied -> draft only when panel transitions from closed to open.
+  useEffect(() => {
+    if (open && !wasOpenRef.current) {
+      setDraft(applied);
+    }
+    wasOpenRef.current = open;
+  }, [open, applied]);
 
   return [draft, setDraft];
 }

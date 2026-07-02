@@ -13,7 +13,7 @@ export type DunetaAppProvidersProps = {
 /** Default app provider stack kept intentionally minimal. */
 export function DunetaAppProviders({
   children,
-  theme = 'light',
+  theme,
   queryClient,
 }: DunetaAppProvidersProps) {
   return (
