@@ -1,7 +1,7 @@
 {
   "name": "duneta-server",
   "private": false,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Server utilities for Duneta applications.",
   "license": "MIT",
   "type": "module",
@@ -88,7 +88,7 @@
   "dependencies": {
     "aws4fetch": "^1.0.20",
     "better-auth": "^1.2.0",
-    "drizzle-orm": "^0.44.0",
+    "drizzle-orm": "^0.45.2",
     "hono": "^4.7.0",
     "pg": "^8.16.0",
     "zod": "^3.24.0"

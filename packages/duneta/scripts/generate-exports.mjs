@@ -44,6 +44,8 @@ dunetaPkg.exports = {
   ...prefixExports(serverPkg.exports, 'server', './server'),
 };
 
-dunetaPkg.files = publishMode ? ['bin', 'vite.mjs', 'client', 'server'] : ['bin', 'vite.mjs'];
+dunetaPkg.files = publishMode
+  ? ['bin', 'vite.mjs', 'scripts', 'client', 'server']
+  : ['bin', 'vite.mjs', 'scripts'];
 
 fs.writeFileSync(path.join(dunetaDir, 'package.json'), `${JSON.stringify(dunetaPkg, null, 2)}\n`);

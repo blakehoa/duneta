@@ -27,7 +27,7 @@ npm run dev
     "deploy": "duneta deploy"
   },
   "dependencies": {
-    "duneta": "^0.1.0",
+    "duneta": "^0.1.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   }

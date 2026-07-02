@@ -1,6 +1,6 @@
 {
   "name": "duneta",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Full-stack React + Hono on Cloudflare Workers — dev, build, and deploy CLI.",
   "license": "MIT",
   "type": "module",
@@ -9,7 +9,8 @@
   },
   "files": [
     "bin",
-    "vite.mjs"
+    "vite.mjs",
+    "scripts"
   ],
   "scripts": {
     "generate:exports": "node ./scripts/generate-exports.mjs",
