@@ -37,21 +37,13 @@ const clientPkg = JSON.parse(fs.readFileSync(path.join(dunetaDir, '../client/pac
 const serverPkg = JSON.parse(fs.readFileSync(path.join(dunetaDir, '../server/package.json'), 'utf8'));
 const dunetaPkg = JSON.parse(fs.readFileSync(path.join(dunetaDir, 'package.json'), 'utf8'));
 
-const baseExports = {
+dunetaPkg.exports = {
   './package.json': './package.json',
   './vite': './vite.mjs',
+  ...prefixExports(clientPkg.exports, 'client', './client'),
+  ...prefixExports(serverPkg.exports, 'server', './server'),
 };
 
-if (publishMode) {
-  dunetaPkg.exports = {
-    ...baseExports,
-    ...prefixExports(clientPkg.exports, 'client', './client'),
-    ...prefixExports(serverPkg.exports, 'server', './server'),
-  };
-  dunetaPkg.files = ['bin', 'vite.mjs', 'client', 'server'];
-} else {
-  dunetaPkg.exports = baseExports;
-  dunetaPkg.files = ['bin', 'vite.mjs'];
-}
+dunetaPkg.files = publishMode ? ['bin', 'vite.mjs', 'client', 'server'] : ['bin', 'vite.mjs'];
 
 fs.writeFileSync(path.join(dunetaDir, 'package.json'), `${JSON.stringify(dunetaPkg, null, 2)}\n`);

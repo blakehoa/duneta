@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-const clientRoot = path.dirname(fileURLToPath(new URL('..', import.meta.url)));
+const clientRoot = fileURLToPath(new URL('..', import.meta.url));
 const webRoot = process.argv[2] ?? process.cwd();
 
 const distLoad = path.join(clientRoot, 'dist/configs/load.js');

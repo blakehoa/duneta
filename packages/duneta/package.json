@@ -14,7 +14,8 @@
   "scripts": {
     "generate:exports": "node ./scripts/generate-exports.mjs",
     "prepublishOnly": "pnpm --dir ../client run build && pnpm --dir ../server run build && node ./scripts/sync-bundled.mjs --copy && node ./scripts/generate-exports.mjs --publish",
-    "postpublish": "node ./scripts/sync-bundled.mjs --clean && node ./scripts/generate-exports.mjs",
+    "postpublish": "node ./scripts/sync-bundled.mjs --clean && node ./scripts/sync-bundled.mjs && node ./scripts/generate-exports.mjs",
+    "postinstall": "node ./scripts/sync-bundled.mjs",
     "typecheck": "node -e \"process.exit(0)\""
   },
   "publishConfig": {
@@ -22,7 +23,182 @@
   },
   "exports": {
     "./package.json": "./package.json",
-    "./vite": "./vite.mjs"
+    "./vite": "./vite.mjs",
+    "./client/package.json": "./client/package.json",
+    "./client/core": {
+      "types": "./client/dist/core/index.d.ts",
+      "import": "./client/dist/core/index.js"
+    },
+    "./client/validators": {
+      "types": "./client/dist/validators/index.d.ts",
+      "import": "./client/dist/validators/index.js"
+    },
+    "./client/validators/string": {
+      "types": "./client/dist/validators/string/index.d.ts",
+      "import": "./client/dist/validators/string/index.js"
+    },
+    "./client/validators/number": {
+      "types": "./client/dist/validators/number/index.d.ts",
+      "import": "./client/dist/validators/number/index.js"
+    },
+    "./client/validators/auth": {
+      "types": "./client/dist/validators/auth/index.d.ts",
+      "import": "./client/dist/validators/auth/index.js"
+    },
+    "./client/validators/scalar": {
+      "types": "./client/dist/validators/scalar/index.d.ts",
+      "import": "./client/dist/validators/scalar/index.js"
+    },
+    "./client/validators/types": {
+      "types": "./client/dist/validators/types/index.d.ts",
+      "import": "./client/dist/validators/types/index.js"
+    },
+    "./client/http": {
+      "types": "./client/dist/http/index.d.ts",
+      "import": "./client/dist/http/index.js"
+    },
+    "./client/query": {
+      "types": "./client/dist/query/index.d.ts",
+      "import": "./client/dist/query/index.js"
+    },
+    "./client/query/ssr-server": {
+      "types": "./client/dist/query/ssr-server.d.ts",
+      "import": "./client/dist/query/ssr-server.js"
+    },
+    "./client/form": {
+      "types": "./client/dist/form/index.d.ts",
+      "import": "./client/dist/form/index.js"
+    },
+    "./client/feedback": {
+      "types": "./client/dist/feedback/index.d.ts",
+      "import": "./client/dist/feedback/index.js"
+    },
+    "./client/i18n": {
+      "types": "./client/dist/i18n/index.d.ts",
+      "import": "./client/dist/i18n/index.js"
+    },
+    "./client/helpers": {
+      "types": "./client/dist/helpers/index.d.ts",
+      "import": "./client/dist/helpers/index.js"
+    },
+    "./client/providers": {
+      "types": "./client/dist/providers/index.d.ts",
+      "import": "./client/dist/providers/index.js"
+    },
+    "./client/image": {
+      "types": "./client/dist/image/index.d.ts",
+      "import": "./client/dist/image/index.js"
+    },
+    "./client/script": {
+      "types": "./client/dist/script/index.d.ts",
+      "import": "./client/dist/script/index.js"
+    },
+    "./client/router": {
+      "types": "./client/dist/router/index.d.ts",
+      "import": "./client/dist/router/index.js"
+    },
+    "./client/ui": {
+      "types": "./client/dist/ui/index.d.ts",
+      "import": "./client/dist/ui/index.js"
+    },
+    "./client/ui/*": {
+      "types": "./client/dist/components/*/index.d.ts",
+      "import": "./client/dist/components/*/index.js"
+    },
+    "./client/configs": {
+      "types": "./client/dist/configs/index.d.ts",
+      "import": "./client/dist/configs/index.js"
+    },
+    "./client/configs/vite": {
+      "types": "./client/dist/configs/vite.d.ts",
+      "import": "./client/dist/configs/vite.js"
+    },
+    "./client/configs/react-router": {
+      "types": "./client/dist/configs/react-router.d.ts",
+      "import": "./client/dist/configs/react-router.js"
+    },
+    "./client/configs/load": {
+      "types": "./client/dist/configs/load.d.ts",
+      "import": "./client/dist/configs/load.js"
+    },
+    "./client/configs/bootstrap": {
+      "types": "./client/dist/configs/bootstrap.d.ts",
+      "import": "./client/dist/configs/bootstrap.js"
+    },
+    "./client/configs/duneta": {
+      "types": "./client/dist/configs/duneta.d.ts",
+      "import": "./client/dist/configs/duneta.js"
+    },
+    "./client/scripts/sync-routers": "./client/scripts/sync-routers.mjs",
+    "./client/scripts/load-config": "./client/scripts/load-config.mjs",
+    "./client/starter/layouts": {
+      "types": "./client/dist/starter/layouts/index.d.ts",
+      "import": "./client/dist/starter/layouts/index.js"
+    },
+    "./client/starter/layouts/duneta-home.css": "./client/starter/layouts/duneta-home.css",
+    "./client/themes/globals.css": "./client/themes/globals.css",
+    "./server/package.json": "./server/package.json",
+    "./server/configs": {
+      "types": "./server/dist/configs/index.d.ts",
+      "import": "./server/dist/configs/index.js"
+    },
+    "./server/scripts/sync-api": "./server/scripts/sync-api.mjs",
+    "./server/middlewares": {
+      "types": "./server/dist/middlewares/index.d.ts",
+      "import": "./server/dist/middlewares/index.js"
+    },
+    "./server/repositories": {
+      "types": "./server/dist/repositories/index.d.ts",
+      "import": "./server/dist/repositories/index.js"
+    },
+    "./server/assembly": {
+      "types": "./server/dist/assembly/index.d.ts",
+      "import": "./server/dist/assembly/index.js"
+    },
+    "./server/routers": {
+      "types": "./server/dist/routers/index.d.ts",
+      "import": "./server/dist/routers/index.js"
+    },
+    "./server/auth": {
+      "types": "./server/dist/auth/index.d.ts",
+      "import": "./server/dist/auth/index.js"
+    },
+    "./server/permissions": {
+      "types": "./server/dist/permissions/index.d.ts",
+      "import": "./server/dist/permissions/index.js"
+    },
+    "./server/container": {
+      "types": "./server/dist/container/index.d.ts",
+      "import": "./server/dist/container/index.js"
+    },
+    "./server/database": {
+      "types": "./server/dist/database/index.d.ts",
+      "import": "./server/dist/database/index.js"
+    },
+    "./server/http": {
+      "types": "./server/dist/http/index.d.ts",
+      "import": "./server/dist/http/index.js"
+    },
+    "./server/cache": {
+      "types": "./server/dist/cache/index.d.ts",
+      "import": "./server/dist/cache/index.js"
+    },
+    "./server/cached": {
+      "types": "./server/dist/cached/index.d.ts",
+      "import": "./server/dist/cached/index.js"
+    },
+    "./server/cron": {
+      "types": "./server/dist/cron/index.d.ts",
+      "import": "./server/dist/cron/index.js"
+    },
+    "./server/logging": {
+      "types": "./server/dist/logging/index.d.ts",
+      "import": "./server/dist/logging/index.js"
+    },
+    "./server/runtime/worker": {
+      "types": "./server/dist/runtime/worker/index.d.ts",
+      "import": "./server/dist/runtime/worker/index.js"
+    }
   },
   "dependencies": {
     "@react-router/dev": "^8.0.1",
