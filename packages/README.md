@@ -17,6 +17,7 @@ Monorepo chỉ có **một** source: `packages/client` và `packages/server`. Kh
 
 ## Tài liệu
 
+- [`duneta` README](./duneta/README.md) · [`duneta-client` README](./client/README.md) · [`duneta-server` README](./server/README.md) · [`create-duneta-app` README](./create-duneta-app/README.md)
 - [`duneta/server`](../docs/packages/server.md)
 - [`duneta/client`](../docs/packages/client.md)
 - [Kiến trúc](../docs/architecture.md)

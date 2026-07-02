@@ -51,7 +51,7 @@ Import vẫn dùng `duneta/client/...` hoặc `duneta/server/...` (Vite alias + 
 ```bash
 pnpm --filter duneta-server run build
 pnpm --filter duneta-client run build
-pnpm version:sync 0.1.0
+pnpm version:sync 0.1.1
 pnpm --filter duneta-server publish --access public
 pnpm --filter duneta-client publish --access public
 pnpm --filter duneta publish --access public
