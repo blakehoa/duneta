@@ -21,8 +21,6 @@
     "version:bump": "node scripts/version.mjs bump"
   },
   "dependencies": {
-    "@duneta/client": "workspace:*",
-    "@duneta/server": "workspace:*",
     "duneta": "workspace:*"
   },
   "devDependencies": {

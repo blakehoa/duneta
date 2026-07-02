@@ -1,5 +1,5 @@
-import { defineGroup } from '@duneta/server/routers';
-import { resolveController } from '@duneta/server/http';
+import { defineGroup } from 'duneta/server/routers';
+import { resolveController } from 'duneta/server/http';
 
 const controllerKey = 'ImageMediaStorageController';
 

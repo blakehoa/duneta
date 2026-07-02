@@ -2,12 +2,14 @@
 
 ## Packages
 
-| npm | Mô tả |
-|-----|--------|
-| `duneta` | CLI — `duneta dev`, `duneta build`, `duneta deploy` |
-| `@duneta/client` | Web kit + Vite/React Router config |
-| `@duneta/server` | Hono API framework |
-| `create-duneta-app` | Scaffold project mới |
+| Cài (`npm install`) | Import trong code | Mô tả |
+|---------------------|-------------------|--------|
+| `duneta` | `duneta/client`, `duneta/server` | CLI + gộp client & server |
+| `duneta-client` | `duneta/client` | Web kit (cài riêng) |
+| `duneta-server` | `duneta/server` | Hono API (cài riêng) |
+| `create-duneta-app` | — | Scaffold project mới |
+
+**Lưu ý:** `duneta/client` và `duneta/server` là **import path** trong code, không phải tên package npm. Trên registry chỉ có `duneta`, `duneta-client`, `duneta-server`.
 
 ## User workflow (sau khi publish)
 
@@ -32,23 +34,35 @@ npm run dev
 }
 ```
 
+Chỉ cần `duneta` — client và server được gộp sẵn trong package.
+
+### Cài riêng client hoặc server
+
+```bash
+npm install duneta-client
+# hoặc
+npm install duneta-server
+```
+
+Import vẫn dùng `duneta/client/...` hoặc `duneta/server/...` (Vite alias + `tsconfig` paths trong template hỗ trợ cả hai layout).
+
 ## Publish từ monorepo
 
 ```bash
-pnpm --filter @duneta/server run build
-pnpm --filter @duneta/client run build
+pnpm --filter duneta-server run build
+pnpm --filter duneta-client run build
 pnpm version:sync 0.1.0
-pnpm --filter @duneta/server publish --access public
-pnpm --filter @duneta/client publish --access public
+pnpm --filter duneta-server publish --access public
+pnpm --filter duneta-client publish --access public
 pnpm --filter duneta publish --access public
 pnpm --filter create-duneta-app publish --access public
 ```
 
-Thứ tự: **server → client → duneta → create-duneta-app** (`duneta` phụ thuộc client/server).
+Thứ tự: **duneta-server → duneta-client → duneta → create-duneta-app**.
+
+Package `duneta` copy `duneta-client` + `duneta-server` vào tarball lúc publish (`prepublishOnly`), không duplicate trong monorepo dev — source duy nhất là `packages/client` và `packages/server`.
 
 ## Monorepo dev
-
-Repo gốc dùng `duneta` workspace CLI — dogfood giống user npm:
 
 ```bash
 pnpm install

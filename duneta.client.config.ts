@@ -1,4 +1,4 @@
-import { defineClientConfig } from '@duneta/client/configs';
+import { defineClientConfig } from 'duneta/client/configs';
 
 export default defineClientConfig({
   app: {

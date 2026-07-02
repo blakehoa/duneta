@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
-import { DunetaLink as Link } from '@duneta/client/ui';
-import { DunetaAsyncBoundary } from '@duneta/client/feedback';
-import { useHttpQuery } from '@duneta/client/query';
+import { DunetaLink as Link } from 'duneta/client/ui';
+import { DunetaAsyncBoundary } from 'duneta/client/feedback';
+import { useHttpQuery } from 'duneta/client/query';
 
 type HealthResponse = {
   ok: boolean;

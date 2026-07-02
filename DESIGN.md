@@ -147,7 +147,7 @@ Avoid interfaces dominated by purple/blue gradients, beige/brown themes, or deco
 
 HeroUI components are the default implementation surface. Duneta wrappers expose `Duneta*` names and should preserve HeroUI props whenever possible.
 
-`@duneta/client/ui` is the preferred public import for UI components. Keep renderable primitives named with the `Duneta` prefix, for example `DunetaImage` and `DunetaScript`.
+`duneta/client/ui` is the preferred public import for UI components. Keep renderable primitives named with the `Duneta` prefix, for example `DunetaImage` and `DunetaScript`.
 
 `DunetaImage`, `DunetaScript`, and dynamic component helpers are Duneta primitives, not React or Next.js APIs. Their names and docs must make that clear.
 

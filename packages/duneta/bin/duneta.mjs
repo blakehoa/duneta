@@ -3,13 +3,14 @@ import { spawnSync } from 'node:child_process';
 import fs, { existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { resolveDunetaRoots } from '../scripts/resolve-roots.mjs';
 
 const require = createRequire(import.meta.url);
+const dunetaRoot = path.dirname(fileURLToPath(new URL('../', import.meta.url)));
+const { clientRoot, serverRoot } = resolveDunetaRoots(import.meta.url);
 const projectRoot = process.cwd();
 const appRoot = path.join(projectRoot, 'app');
-
-const clientRoot = path.dirname(require.resolve('@duneta/client/package.json'));
-const serverRoot = path.dirname(require.resolve('@duneta/server/package.json'));
 
 function bin(pkg, file = 'bin.cjs') {
   return path.join(path.dirname(require.resolve(`${pkg}/package.json`)), file);
@@ -104,8 +105,8 @@ function makeController(name) {
   writeNewFile(
     path.join(appRoot, 'api/controllers', `${base}-controller.ts`),
     `import type { Context } from 'hono';
-import { BaseController } from '@duneta/server/http';
-import type { RequestContext } from '@duneta/server/middlewares';
+import { BaseController } from 'duneta/server/http';
+import type { RequestContext } from 'duneta/server/middlewares';
 
 export class ${className} extends BaseController {
   index = (c: Context<RequestContext>) => {
@@ -140,8 +141,8 @@ function makeRoute(name) {
   const exportName = `${camel(name)}Routes`;
   writeNewFile(
     path.join(appRoot, 'api/routers', `${base}.routes.ts`),
-    `import { resolveController } from '@duneta/server/http';
-import { defineGroup } from '@duneta/server/routers';
+    `import { resolveController } from 'duneta/server/http';
+import { defineGroup } from 'duneta/server/routers';
 
 export const ${exportName} = defineGroup({
   path: '${routePathFromName(name)}',
@@ -159,7 +160,7 @@ function makePolicy(name) {
   const exportName = `${camel(name)}Policy`;
   writeNewFile(
     path.join(appRoot, 'api/policies', `${base}-policy.ts`),
-    `import type { Permission, PolicySubject } from '@duneta/server/permissions';
+    `import type { Permission, PolicySubject } from 'duneta/server/permissions';
 
 export const ${exportName} = {
   can(permission: Permission, subject?: PolicySubject) {
@@ -177,7 +178,7 @@ function makeMiddleware(name) {
   writeNewFile(
     path.join(appRoot, 'api/middlewares', `${base}.ts`),
     `import { createMiddleware } from 'hono/factory';
-import type { RequestContext } from '@duneta/server/middlewares';
+import type { RequestContext } from 'duneta/server/middlewares';
 
 export const ${exportName} = createMiddleware<RequestContext>(async (_c, next) => {
   await next();
@@ -194,7 +195,7 @@ function makeCron(name) {
   const cronDir = path.join(appRoot, 'api/cron');
   writeNewFile(
     path.join(cronDir, `${fileBase}.ts`),
-    `import { BaseKernelCron, type CronJobContext } from '@duneta/server/cron';
+    `import { BaseKernelCron, type CronJobContext } from 'duneta/server/cron';
 
 export class ${className} extends BaseKernelCron {
   readonly name = '${cronName}';
@@ -210,7 +211,7 @@ export class ${className} extends BaseKernelCron {
 }
 
 function defaultCronKernel() {
-  return `import { defineCronKernel } from '@duneta/server/cron';
+  return `import { defineCronKernel } from 'duneta/server/cron';
 
 export const registerCron = defineCronKernel([
   // Register cron classes here.
@@ -270,20 +271,20 @@ function buildPackagesIfNeeded() {
   if (packagesBuilt()) return;
   const monorepoRoot = findMonorepoRoot();
   if (!monorepoRoot) {
-    console.error('[duneta] @duneta/client or @duneta/server is not built. Reinstall duneta.');
+    console.error('[duneta] duneta/client or duneta/server is not built. Reinstall duneta.');
     process.exit(1);
   }
-  console.log('[duneta] building @duneta/client and @duneta/server…');
-  run('pnpm', ['--filter', '@duneta/client', '--filter', '@duneta/server', 'run', 'build'], monorepoRoot);
+  console.log('[duneta] building duneta-client and duneta-server…');
+  run('pnpm', ['--filter', 'duneta-client', '--filter', 'duneta-server', 'run', 'build'], monorepoRoot);
 }
 
 async function loadSyncRouters() {
-  const mod = await import('@duneta/client/scripts/sync-routers');
+  const mod = await import(pathToFileURL(path.join(clientRoot, 'scripts/sync-routers.mjs')).href);
   return mod.syncRouters;
 }
 
 async function loadSyncApi() {
-  const mod = await import('@duneta/server/scripts/sync-api');
+  const mod = await import(pathToFileURL(path.join(serverRoot, 'scripts/sync-api.mjs')).href);
   return mod.syncApi;
 }
 
@@ -406,14 +407,14 @@ function parseRouteGroups(file) {
 function frameworkRouteGroups(routerSource) {
   const groups = [];
   if (/\bhealthRoutes\b/.test(routerSource)) {
-    groups.push({ source: '@duneta/server/routers', endpoints: [{ method: 'GET', path: '/health' }] });
+    groups.push({ source: 'duneta/server/routers', endpoints: [{ method: 'GET', path: '/health' }] });
   }
   if (/\bmeRoutes\b/.test(routerSource)) {
-    groups.push({ source: '@duneta/server/routers', endpoints: [{ method: 'GET', path: '/me' }] });
+    groups.push({ source: 'duneta/server/routers', endpoints: [{ method: 'GET', path: '/me' }] });
   }
   if (/\b(createUsersRoutes|usersRoutes)\b/.test(routerSource)) {
     groups.push({
-      source: '@duneta/server/routers',
+      source: 'duneta/server/routers',
       endpoints: [
         { method: 'GET', path: '/users' },
         { method: 'GET', path: '/users/:id' },

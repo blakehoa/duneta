@@ -1,5 +1,5 @@
 {
-  "name": "@duneta/client",
+  "name": "duneta-client",
   "private": false,
   "version": "0.1.0",
   "description": "Browser-safe utilities and React Router web kit for Duneta applications.",

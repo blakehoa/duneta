@@ -14,7 +14,7 @@ export function setGlobalCache(cache: Cache): void {
  * Global cache facade — use anywhere without injecting context.
  *
  * ```ts
- * import { cached } from '@duneta/server/cached';
+ * import { cached } from 'duneta/server/cached';
  * await cached.set('key', 'value', 60_000);
  * await cached.get('key');
  * await cached.has('key');

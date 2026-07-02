@@ -8,6 +8,20 @@
     "baseUrl": ".",
     "rootDirs": [".", "./app/.react-router/types"],
     "paths": {
+      "duneta/client/ui/*": [
+        "./node_modules/duneta/client/dist/components/*/index",
+        "./node_modules/duneta-client/dist/components/*/index"
+      ],
+      "duneta/client/*": [
+        "./node_modules/duneta/client/dist/*",
+        "./node_modules/duneta/client/*",
+        "./node_modules/duneta-client/dist/*",
+        "./node_modules/duneta-client/*"
+      ],
+      "duneta/server/*": [
+        "./node_modules/duneta/server/dist/*",
+        "./node_modules/duneta-server/dist/*"
+      ],
       "~/*": ["app/*"]
     }
   },

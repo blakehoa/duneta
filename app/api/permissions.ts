@@ -1,4 +1,4 @@
-import type { PermissionResolver } from '@duneta/server/permissions';
+import type { PermissionResolver } from 'duneta/server/permissions';
 
 const ROLE_GRANTS: Record<string, readonly string[]> = {
   admin: ['*'],

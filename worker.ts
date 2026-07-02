@@ -1,5 +1,5 @@
 import { createRequestHandler, RouterContextProvider } from 'react-router';
-import { createDunetaWorker, defineServer } from '@duneta/server/runtime/worker';
+import { createDunetaWorker, defineServer } from 'duneta/server/runtime/worker';
 import { createAppRouter } from './app/api/router';
 import { resolvePermissions } from './app/api/permissions';
 import { registerServices } from './app/api/services';

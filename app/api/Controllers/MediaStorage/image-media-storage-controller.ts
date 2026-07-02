@@ -1,13 +1,13 @@
 import type { Context } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
-import type { StorageConfig } from '@duneta/server/configs';
+import type { StorageConfig } from 'duneta/server/configs';
 import {
   BaseStorageController,
   type UploadOptions,
   type UploadResult,
-} from '@duneta/server/http';
-import { HttpError } from '@duneta/server/permissions';
-import type { RequestContext } from '@duneta/server/middlewares/request-context.js';
+} from 'duneta/server/http';
+import { HttpError } from 'duneta/server/permissions';
+import type { RequestContext } from 'duneta/server/middlewares/request-context.js';
 
 const IMAGE_TYPES = new Set([
   'image/jpeg',

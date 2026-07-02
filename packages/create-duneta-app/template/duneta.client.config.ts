@@ -1,4 +1,4 @@
-import { defineClientConfig } from '@duneta/client/configs';
+import { defineClientConfig } from 'duneta/client/configs';
 
 /** Minimal app — web only. Server features opt-in in `duneta.server.config.ts`. */
 export default defineClientConfig({

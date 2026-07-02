@@ -156,7 +156,7 @@ export type DebugConfig = {
   logLevel: 'debug' | 'info' | 'warn' | 'error';
 };
 
-/** Built-in config sections shipped by `@duneta/server`. */
+/** Built-in config sections shipped by `duneta/server`. */
 export interface DunetaCoreConfig {
   runtime: RuntimeConfig;
   app: AppConfig;

@@ -8,9 +8,9 @@
     "baseUrl": ".",
     "rootDirs": [".", "./app/.react-router/types"],
     "paths": {
-      "@duneta/client": ["packages/client"],
-      "@duneta/client/*": ["packages/client/*"],
-      "@duneta/server/*": ["packages/server/*"],
+      "duneta/client/ui/*": ["packages/client/dist/components/*/index"],
+      "duneta/client/*": ["packages/client/dist/*", "packages/client/*"],
+      "duneta/server/*": ["packages/server/dist/*", "packages/server/*"],
       "~/*": ["app/*"]
     }
   },

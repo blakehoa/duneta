@@ -5,8 +5,8 @@
 `api/router.ts` export `createAppRouter(config)` — ghép framework + app routes.
 
 ```ts
-import { composeRouter, defineGroup, resolveController } from '@duneta/server/routers';
-import { requireSession } from '@duneta/server/middlewares';
+import { composeRouter, defineGroup, resolveController } from 'duneta/server/routers';
+import { requireSession } from 'duneta/server/middlewares';
 ```
 
 ## `defineGroup`
@@ -48,6 +48,6 @@ pnpm duneta routes
 In route groups đang mount trong `app/api/router.ts`, gồm framework routes (`healthRoutes`, `meRoutes`, `createUsersRoutes`) và app routes khai báo bằng `defineGroup`.
 
 ```text
-GET    /health            @duneta/server/routers
+GET    /health            duneta/server/routers
 POST   /media/images      app/api/Controllers/MediaStorage/routes.ts
 ```

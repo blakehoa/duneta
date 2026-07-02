@@ -27,7 +27,7 @@ The command creates the class and adds it to `app/api/cron/index.ts`.
 
 ```ts
 // app/api/cron/delete-user-session-cron.ts
-import { BaseKernelCron, type CronJobContext } from '@duneta/server/cron';
+import { BaseKernelCron, type CronJobContext } from 'duneta/server/cron';
 
 export class DeleteUserSessionCron extends BaseKernelCron {
   readonly name = 'delete-user-session';
@@ -43,7 +43,7 @@ export class DeleteUserSessionCron extends BaseKernelCron {
 
 ```ts
 // app/api/cron/index.ts
-import { defineCronKernel } from '@duneta/server/cron';
+import { defineCronKernel } from 'duneta/server/cron';
 import { DeleteUserSessionCron } from './delete-user-session-cron';
 
 export const registerCron = defineCronKernel([

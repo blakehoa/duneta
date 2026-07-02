@@ -1,16 +1,16 @@
 import type { SortDescriptor } from '@heroui/react';
 import { useCallback, useMemo, useState } from 'react';
-import { DunetaButton } from '@duneta/client/ui/DunetaButton';
-import { DunetaButtonGroup } from '@duneta/client/ui/DunetaButtonGroup';
-import { DunetaChip } from '@duneta/client/ui/DunetaChip';
+import { DunetaButton } from 'duneta/client/ui/DunetaButton';
+import { DunetaButtonGroup } from 'duneta/client/ui/DunetaButtonGroup';
+import { DunetaChip } from 'duneta/client/ui/DunetaChip';
 import {
   DunetaDataTable,
   type ColumnDef,
   type DunetaDataTableDataType,
-} from '@duneta/client/ui/DunetaDataTable';
-import { DunetaLabel } from '@duneta/client/ui/DunetaLabel';
-import { DunetaLink as Link } from '@duneta/client/ui/DunetaLink';
-import { DunetaTypography } from '@duneta/client/ui/DunetaTypography';
+} from 'duneta/client/ui/DunetaDataTable';
+import { DunetaLabel } from 'duneta/client/ui/DunetaLabel';
+import { DunetaLink as Link } from 'duneta/client/ui/DunetaLink';
+import { DunetaTypography } from 'duneta/client/ui/DunetaTypography';
 import {
   createDemoProductRows,
   type DemoProductRow,

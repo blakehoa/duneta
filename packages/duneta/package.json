@@ -8,21 +8,26 @@
     "duneta": "./bin/duneta.mjs"
   },
   "files": [
-    "bin"
+    "bin",
+    "vite.mjs"
   ],
   "scripts": {
+    "generate:exports": "node ./scripts/generate-exports.mjs",
+    "prepublishOnly": "pnpm --dir ../client run build && pnpm --dir ../server run build && node ./scripts/sync-bundled.mjs --copy && node ./scripts/generate-exports.mjs --publish",
+    "postpublish": "node ./scripts/sync-bundled.mjs --clean && node ./scripts/generate-exports.mjs",
     "typecheck": "node -e \"process.exit(0)\""
   },
   "publishConfig": {
     "access": "public"
   },
   "exports": {
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./vite": "./vite.mjs"
   },
   "dependencies": {
-    "@duneta/client": "workspace:*",
-    "@duneta/server": "workspace:*",
     "@react-router/dev": "^8.0.1",
+    "duneta-client": "workspace:*",
+    "duneta-server": "workspace:*",
     "tsx": "^4.19.4",
     "wrangler": "^4.105.0"
   },

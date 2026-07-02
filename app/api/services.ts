@@ -1,6 +1,6 @@
-import { defineServices } from '@duneta/server/container';
-import { HealthController, MeController, UserController } from '@duneta/server/http';
-import { UserRepository } from '@duneta/server/repositories';
+import { defineServices } from 'duneta/server/container';
+import { HealthController, MeController, UserController } from 'duneta/server/http';
+import { UserRepository } from 'duneta/server/repositories';
 import { ImageMediaStorageController } from './Controllers/MediaStorage/index.js';
 
 export const registerServices = defineServices({

@@ -1,11 +1,11 @@
 import type { EntryContext, RouterContextProvider } from 'react-router';
 import { ServerRouter } from 'react-router';
 import { renderToReadableStream } from 'react-dom/server';
-import { createDunetaQueryClient } from '@duneta/client/query';
+import { createDunetaQueryClient } from 'duneta/client/query';
 import {
   DunetaServerQueryProvider,
   finalizeSsrQueryResponse,
-} from '@duneta/client/query/ssr-server';
+} from 'duneta/client/query/ssr-server';
 
 export const streamTimeout = 5_000;
 

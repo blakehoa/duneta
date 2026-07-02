@@ -8,12 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@duneta/client':
-        specifier: workspace:*
-        version: link:packages/client
-      '@duneta/server':
-        specifier: workspace:*
-        version: link:packages/server
       duneta:
         specifier: workspace:*
         version: link:packages/duneta
@@ -153,15 +147,15 @@ importers:
 
   packages/duneta:
     dependencies:
-      '@duneta/client':
-        specifier: workspace:*
-        version: link:../client
-      '@duneta/server':
-        specifier: workspace:*
-        version: link:../server
       '@react-router/dev':
         specifier: ^8.0.1
         version: 8.0.1(@react-router/serve@8.0.1(react-router@8.0.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@5.9.3))(react-router@8.0.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@5.9.3)(vite@7.3.5(@types/node@22.20.0)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.16.9)(tsx@4.22.4)(yaml@2.9.0))(wrangler@4.105.0(@cloudflare/workers-types@4.20260621.1))
+      duneta-client:
+        specifier: workspace:*
+        version: link:../client
+      duneta-server:
+        specifier: workspace:*
+        version: link:../server
       tsx:
         specifier: ^4.19.4
         version: 4.22.4

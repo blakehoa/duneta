@@ -34,7 +34,7 @@ export const post = pgTable('post', {
 
 ```ts
 // app/api/repositories/post-repository.ts
-import { BaseRepository } from '@duneta/server/http';
+import { BaseRepository } from 'duneta/server/http';
 import { post } from './schemas/post';
 
 export class PostRepository extends BaseRepository<typeof post> {
@@ -63,9 +63,9 @@ export class PostController extends BaseController {
 
 ```ts
 // app/api/routers/posts.routes.ts
-import { defineGroup } from '@duneta/server/routers';
-import { resolveController } from '@duneta/server/http';
-import { requireSession } from '@duneta/server/middlewares';
+import { defineGroup } from 'duneta/server/routers';
+import { resolveController } from 'duneta/server/http';
+import { requireSession } from 'duneta/server/middlewares';
 
 export const postsRoutes = defineGroup({
   path: '/posts',
@@ -100,7 +100,7 @@ ctx.controllers.singleton('UserController', () => new MyUserController(...));
 
 ## Workflow: dùng route build sẵn
 
-Framework ship sẵn trong `@duneta/server/routers` — user chọn mount trong `app/api/router.ts`:
+Framework ship sẵn trong `duneta/server/routers` — user chọn mount trong `app/api/router.ts`:
 
 | Route group | Cần config | Cần register |
 |-------------|------------|--------------|
@@ -116,7 +116,7 @@ App mới chỉ mount `healthRoutes`. Thêm group = bật config + register serv
 ```tsx
 // app/pages/posts/page.tsx
 import { useLoaderData } from 'react-router';
-import { http } from '@duneta/client/http';
+import { http } from 'duneta/client/http';
 
 export async function loader() {
   return http.json('/posts');

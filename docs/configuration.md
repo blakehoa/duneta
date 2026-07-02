@@ -56,7 +56,7 @@ return api.fetch(request);
 `duneta.server.config.ts` — chỉ API features + `process.env.*` cho secrets. **`app.name` / `app.env` không cần lặp** — `app.name` chỉ client; `app.env` server auto từ `process.env.NODE_ENV` (Wrangler `vars.NODE_ENV`).
 
 ```ts
-import { defineServerConfig } from '@duneta/server/configs';
+import { defineServerConfig } from 'duneta/server/configs';
 
 export default defineServerConfig({
   database: {
@@ -78,7 +78,7 @@ Bindings (Hyperdrive, R2, …) — `wrangler.jsonc` / `wrangler.production.jsonc
 `duneta.client.config.ts`:
 
 ```ts
-import { defineClientConfig } from '@duneta/client/configs';
+import { defineClientConfig } from 'duneta/client/configs';
 
 export default defineClientConfig({
   app: { name: 'my-app', env: 'development' },
@@ -95,7 +95,7 @@ export default defineClientConfig({
 ### Đọc config lúc runtime (API)
 
 ```ts
-import { getConfig } from '@duneta/server/configs';
+import { getConfig } from 'duneta/server/configs';
 ```
 
 ## Logging

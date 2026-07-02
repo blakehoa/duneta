@@ -1,9 +1,9 @@
-import { defineServerConfig } from '@duneta/server/configs';
+import { defineServerConfig } from 'duneta/server/configs';
 import {
   DEFAULT_DATABASE_POOL,
   defineConnections,
   RECOMMENDED_RATE_LIMIT_RULES,
-} from '@duneta/server/configs';
+} from 'duneta/server/configs';
 
 export default defineServerConfig({
   database: {

@@ -75,7 +75,7 @@ function generateServices(controllerFiles, repositoryFiles) {
   const repoSet = new Set(repositoryFiles.map(repositoryBase));
 
   const imports = [
-    `import type { RegisterServices } from '@duneta/server/container';`,
+    `import type { RegisterServices } from 'duneta/server/container';`,
     ...repositoryFiles.map(
       (file) => `import { ${repositoryClassName(file)} } from '../repositories/${file.slice(0, -3)}';`,
     ),
@@ -112,9 +112,9 @@ function generateServices(controllerFiles, repositoryFiles) {
 
 function generateRouter(routeFiles) {
   const imports = [
-    `import type { DunetaServerConfig } from '@duneta/server/configs';`,
-    `import type { RequestContext } from '@duneta/server/middlewares';`,
-    `import { composeRouter } from '@duneta/server/routers';`,
+    `import type { DunetaServerConfig } from 'duneta/server/configs';`,
+    `import type { RequestContext } from 'duneta/server/middlewares';`,
+    `import { composeRouter } from 'duneta/server/routers';`,
     `import { Hono } from 'hono';`,
     ...routeFiles.map(
       (file) => `import { ${routeExportName(file)} } from './routers/${file.slice(0, -3)}';`,

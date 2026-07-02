@@ -1,8 +1,50 @@
+import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 import { cloudflare } from '@cloudflare/vite-plugin';
 import { reactRouter } from '@react-router/dev/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, type UserConfig } from 'vite';
+
+function resolveDunetaRoots() {
+  const require = createRequire(import.meta.url);
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const workspaceClient = path.join(here, '../../package.json');
+  const workspaceServer = path.join(here, '../../../server/package.json');
+  if (fs.existsSync(workspaceClient) && fs.existsSync(workspaceServer)) {
+    return {
+      clientRoot: path.dirname(workspaceClient),
+      serverRoot: path.dirname(workspaceServer),
+    };
+  }
+
+  try {
+    const dunetaPkg = require.resolve('duneta/package.json');
+    const root = path.dirname(dunetaPkg);
+    const client = path.join(root, 'client', 'package.json');
+    const server = path.join(root, 'server', 'package.json');
+    if (fs.existsSync(client) && fs.existsSync(server)) {
+      return {
+        clientRoot: path.dirname(client),
+        serverRoot: path.dirname(server),
+      };
+    }
+  } catch {
+    // fall through
+  }
+
+  try {
+    return {
+      clientRoot: path.dirname(require.resolve('duneta-client/package.json')),
+      serverRoot: path.dirname(require.resolve('duneta-server/package.json')),
+    };
+  } catch {
+    throw new Error('[duneta] Install duneta, or duneta-client and duneta-server');
+  }
+}
+
+const { clientRoot, serverRoot } = resolveDunetaRoots();
 
 export function createDunetaViteConfig(repoRoot: string, appRoot: string, overrides: UserConfig = {}): UserConfig {
   return defineConfig({
@@ -22,10 +64,12 @@ export function createDunetaViteConfig(repoRoot: string, appRoot: string, overri
     resolve: {
       alias: {
         '~': appRoot,
+        'duneta/client': clientRoot,
+        'duneta/server': serverRoot,
       },
     },
     ssr: {
-      noExternal: [/^@duneta\/client/, /^@duneta\/server/, /^@heroui\//],
+      noExternal: [/^duneta\/client/, /^duneta\/server/, /^@heroui\//],
     },
     css: {
       devSourcemap: false,

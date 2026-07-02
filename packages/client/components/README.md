@@ -19,9 +19,9 @@ import {
   DunetaButton,
   DunetaCard,
   DunetaLink,
-} from '@duneta/client/ui';
+} from 'duneta/client/ui';
 
-import { DunetaModal } from '@duneta/client/ui/DunetaModal';
+import { DunetaModal } from 'duneta/client/ui/DunetaModal';
 ```
 
 Load HeroUI styles once via `themes/globals.css` (`@import '@heroui/styles'`).

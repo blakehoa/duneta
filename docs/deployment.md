@@ -3,7 +3,7 @@
 ```text
 your-domain.com/*
   createDunetaWorker (worker.ts)
-    /api/*  → Hono (@duneta/server)
+    /api/*  → Hono (duneta/server)
     static  → ASSETS (auto — app/build/client)
     /*      → React Router SSR  (app/build/server)
 ```

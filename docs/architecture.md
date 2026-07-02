@@ -5,7 +5,7 @@
 | Lớp | Ở đâu | Vai trò |
 |-----|-------|---------|
 | **Core** | `packages/server`, `packages/client`, `duneta` CLI | Runtime, DI, config, middleware, optional modules. **Mặc định OFF** — bật trong `duneta.server.config.ts`. |
-| **Build sẵn** | `@duneta/server/routers`, `@duneta/server/http`, `@duneta/server/repositories`, `@duneta/client/starter/routers` | Controller/route/UI reference — import và dùng, hoặc bỏ qua. |
+| **Build sẵn** | `duneta/server/routers`, `duneta/server/http`, `duneta/server/repositories`, `duneta/client/starter/routers` | Controller/route/UI reference — import và dùng, hoặc bỏ qua. |
 | **User app** | `duneta.client.config.ts`, `duneta.server.config.ts`, `app/api/*`, `app/pages/` | User chọn bật feature nào, mount route nào, register service nào. |
 
 ```text
@@ -26,10 +26,10 @@ worker.ts          →  /api/* (app/api)  +  /* (SSR + assets)
 duneta.client.config.ts   →  web (Vite / React Router)
 duneta.server.config.ts   →  API (Worker runtime only)
 app/               →  source only (pages, api, themes)
-packages/          →  framework (@duneta/server, @duneta/client)
+packages/          →  duneta-client, duneta-server (npm) · import duneta/client, duneta/server
 ```
 
-Web **không** import `@duneta/server` — gọi API qua `/api` same-origin.
+Web **không** import `duneta/server` — gọi API qua `/api` same-origin.
 
 ## Request routing
 

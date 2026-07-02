@@ -1,4 +1,4 @@
-import { DunetaHome } from '@duneta/client/starter/layouts';
+import { DunetaHome } from 'duneta/client/starter/layouts';
 
 export function meta() {
   return [

@@ -1,10 +1,7 @@
-import { createRequire } from 'node:module';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
-
-const require = createRequire(import.meta.url);
-const clientRoot = path.dirname(require.resolve('@duneta/client/package.json'));
+import { fileURLToPath, pathToFileURL } from 'node:url';
+const clientRoot = path.dirname(fileURLToPath(new URL('..', import.meta.url)));
 const webRoot = process.argv[2] ?? process.cwd();
 
 const distLoad = path.join(clientRoot, 'dist/configs/load.js');

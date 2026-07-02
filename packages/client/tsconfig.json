@@ -6,8 +6,8 @@
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
-      "@duneta/client": ["."],
-      "@duneta/client/*": ["./*"]
+      "duneta/client": ["."],
+      "duneta/client/*": ["./*"]
     },
     "noEmit": true
   },

@@ -1,4 +1,4 @@
-import type { PermissionResolver } from '@duneta/server/permissions';
+import type { PermissionResolver } from 'duneta/server/permissions';
 
 export const resolvePermissions: PermissionResolver = async ({ userId }) => ({
   userId,

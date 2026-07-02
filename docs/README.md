@@ -1,6 +1,6 @@
 # Tài liệu Duneta
 
-Monorepo TypeScript: **Hono API** (`@duneta/server`) + **React Router web** (`@duneta/client`).
+Monorepo TypeScript: **Hono API** (`duneta/server`) + **React Router web** (`duneta/client`).
 
 ## Mục lục
 
@@ -32,5 +32,5 @@ Monorepo TypeScript: **Hono API** (`@duneta/server`) + **React Router web** (`@d
 
 ### Packages
 
-- [`@duneta/server`](./packages/server.md)
-- [`@duneta/client`](./packages/client.md)
+- [`duneta/server`](./packages/server.md)
+- [`duneta/client`](./packages/client.md)

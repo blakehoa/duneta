@@ -34,8 +34,8 @@ Helpers có sẵn:
 ```ts
 // app/api/controllers/post-controller.ts
 import type { Context } from 'hono';
-import { BaseController } from '@duneta/server/http';
-import type { RequestContext } from '@duneta/server/middlewares';
+import { BaseController } from 'duneta/server/http';
+import type { RequestContext } from 'duneta/server/middlewares';
 import type { PostRepository } from '../repositories/post-repository';
 
 export class PostController extends BaseController {
@@ -75,7 +75,7 @@ CRUD generic trên Drizzle table có cột `id`:
 
 ```ts
 // app/api/repositories/post-repository.ts
-import { BaseRepository } from '@duneta/server/http';
+import { BaseRepository } from 'duneta/server/http';
 import { post } from './schemas/post';
 
 export class PostRepository extends BaseRepository<typeof post> {

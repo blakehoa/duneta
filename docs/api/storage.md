@@ -11,7 +11,7 @@ Drivers: `s3` · `r2` (Cloudflare R2, S3-compatible API) · `custom`
 ## Config
 
 ```ts
-import { storage } from '@duneta/server/configs';
+import { storage } from 'duneta/server/configs';
 
 storage({
   driver: 'r2',

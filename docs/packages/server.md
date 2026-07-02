@@ -1,4 +1,4 @@
-# `@duneta/server`
+# `duneta/server`
 
 ## Core vs build sẵn
 
@@ -28,10 +28,10 @@ packages/server/
 
 | Path | Symbols |
 |------|---------|
-| `@duneta/server/runtime/worker` | `defineServer`, `ServerOptions` |
-| `@duneta/server/container` | `RegisterServices`, `ServiceRegistryContext` |
-| `@duneta/server/routers` | `composeRouter`, `defineGroup`, `RouteGroup` |
-| `@duneta/server/http` | `resolveController`, `BaseController` |
-| `@duneta/server/middlewares` | `requireSession`, `RequestContext` |
-| `@duneta/server/permissions` | `UserPolicy`, `PermissionResolver` |
-| `@duneta/server/assembly` | `createHttpApp` |
+| `duneta/server/runtime/worker` | `defineServer`, `ServerOptions` |
+| `duneta/server/container` | `RegisterServices`, `ServiceRegistryContext` |
+| `duneta/server/routers` | `composeRouter`, `defineGroup`, `RouteGroup` |
+| `duneta/server/http` | `resolveController`, `BaseController` |
+| `duneta/server/middlewares` | `requireSession`, `RequestContext` |
+| `duneta/server/permissions` | `UserPolicy`, `PermissionResolver` |
+| `duneta/server/assembly` | `createHttpApp` |
