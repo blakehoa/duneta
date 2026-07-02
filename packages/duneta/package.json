@@ -9,7 +9,9 @@
   },
   "files": [
     "bin",
-    "vite.mjs"
+    "vite.mjs",
+    "client",
+    "server"
   ],
   "scripts": {
     "generate:exports": "node ./scripts/generate-exports.mjs",
