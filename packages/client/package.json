@@ -1,7 +1,7 @@
 {
   "name": "duneta-client",
   "private": false,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Browser-safe utilities and React Router web kit for Duneta applications.",
   "license": "MIT",
   "type": "module",
@@ -145,7 +145,7 @@
     "./themes/globals.css": "./themes/globals.css"
   },
   "scripts": {
-    "build": "rm -rf dist && node ../../node_modules/typescript/bin/tsc -p tsconfig.build.json",
+    "build": "rm -rf dist && node ../../node_modules/typescript/bin/tsc -p tsconfig.build.json && node ../../scripts/fix-esm-imports.mjs dist",
     "typecheck": "node ../../node_modules/typescript/bin/tsc --noEmit",
     "generate:ui": "node scripts/generate-ui-wrappers.mjs",
     "prepublishOnly": "pnpm run build"

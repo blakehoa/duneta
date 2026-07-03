@@ -39,7 +39,7 @@ npx create-duneta-app my-app --force
     "deploy": "duneta deploy"
   },
   "dependencies": {
-    "duneta": "^0.1.1",
+    "duneta": "^0.1.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   }

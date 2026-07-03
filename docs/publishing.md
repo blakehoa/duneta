@@ -27,7 +27,7 @@ npm run dev
     "deploy": "duneta deploy"
   },
   "dependencies": {
-    "duneta": "^0.1.1",
+    "duneta": "^0.1.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   }
@@ -51,7 +51,7 @@ Import vẫn dùng `duneta/client/...` hoặc `duneta/server/...` (Vite alias + 
 ```bash
 pnpm --filter duneta-server run build
 pnpm --filter duneta-client run build
-pnpm version:sync 0.1.1
+pnpm version:sync 0.1.2
 pnpm --filter duneta-server publish --access public
 pnpm --filter duneta-client publish --access public
 pnpm --filter duneta publish --access public

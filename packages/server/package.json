@@ -1,7 +1,7 @@
 {
   "name": "duneta-server",
   "private": false,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Server utilities for Duneta applications.",
   "license": "MIT",
   "type": "module",
@@ -78,7 +78,7 @@
     }
   },
   "scripts": {
-    "build": "node ../../node_modules/typescript/bin/tsc -p tsconfig.build.json",
+    "build": "node ../../node_modules/typescript/bin/tsc -p tsconfig.build.json && node ../../scripts/fix-esm-imports.mjs dist",
     "typecheck": "node ../../node_modules/typescript/bin/tsc --noEmit",
     "prepublishOnly": "pnpm run build"
   },
