@@ -1,13 +1,15 @@
-# Routes & `createAppRouter`
+# Routes (`routes/api.ts`)
 
 ## App hook
 
-`api/router.ts` export `createAppRouter(config)` — ghép framework + app routes.
+`routes/api.ts` export `{ api: [...] }` — ghép framework defaults + app routes.
 
 ```ts
-import { composeRouter, defineGroup, resolveController } from 'duneta/server/routers';
-import { requireSession } from 'duneta/server/middlewares';
+import { composeRouter, defineGroup, resolveController } from 'duneta/http/router';
+import { requireSession } from 'duneta/middleware/http';
 ```
+
+API middleware là Hono middleware. Page middleware nằm ở `duneta/middleware/page` và chỉ dùng cho React Router SSR routes trong `routes/web.ts`.
 
 ## `defineGroup`
 
@@ -45,9 +47,9 @@ Mọi route mount dưới `/api` (`createHttpApp`).
 pnpm duneta routes
 ```
 
-In route groups đang mount trong `app/api/router.ts`, gồm framework routes (`healthRoutes`, `meRoutes`, `createUsersRoutes`) và app routes khai báo bằng `defineGroup`.
+In route groups đang mount trong `routes/api.ts`, gồm framework routes (`healthRoutes`, `meRoutes`, `createUsersRoutes`) và app routes khai báo bằng `defineGroup`.
 
 ```text
-GET    /health            duneta/server/routers
-POST   /media/images      app/api/Controllers/MediaStorage/routes.ts
+GET    /health            duneta/http/router
+POST   /media/images      app/http/controllers/MediaStorage/routes.ts
 ```

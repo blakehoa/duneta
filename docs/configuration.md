@@ -3,18 +3,18 @@
 ## Hai file config
 
 ```text
-duneta.client.config.ts  → Vite / React Router / sync routers (web)
-duneta.server.config.ts  → Worker API only (lazy load lúc runtime)
+config/client.ts  → Vite / React Router / sync routers (web)
+config/server.ts  → Worker API only (lazy load lúc runtime)
 ```
 
 Vite **không** import server config → secrets không evaluate lúc web build.
 
 | File | Đọc bởi | Nội dung |
 |------|---------|----------|
-| `duneta.client.config.ts` | `loadConfig`, sync routers | `app`, `theme`, `api`, `locale`, `router`, `image` (sizes, quality) |
-| `duneta.server.config.ts` | `defineServer({ importConfig })` | `database`, `auth`, `image` (domains, cache), … |
+| `config/client.ts` | `loadConfig`, sync routers | `app`, `theme`, `api`, `locale`, `router`, `image` (sizes, quality) |
+| `config/server.ts` | `createDunetaWorker()` runtime load | `database`, `auth`, `image` (domains, cache), … |
 
-Image optimization route is fixed at `/duneta/image` (`IMAGE_OPTIMIZATION_PATH`) — not in user config.
+Image optimization route is fixed at `/duneta/views/image` (`IMAGE_OPTIMIZATION_PATH`) — not in user config.
 
 Cấu hình sai → runtime lỗi. Framework không tự skip.
 
@@ -43,20 +43,14 @@ Khai báo trong `wrangler.jsonc`:
 **Worker** (`worker.ts`):
 
 ```ts
-const api = defineServer({
-  importConfig: () => import('./duneta.server.config'),
-  createAppRouter,
-  registerServices,
-  resolvePermissions,
-});
-
-return api.fetch(request);
+import { createDunetaWorker } from 'duneta/worker';
+export default createDunetaWorker();
 ```
 
-`duneta.server.config.ts` — chỉ API features + `process.env.*` cho secrets. **`app.name` / `app.env` không cần lặp** — `app.name` chỉ client; `app.env` server auto từ `process.env.NODE_ENV` (Wrangler `vars.NODE_ENV`).
+`config/server.ts` — chỉ API features + `process.env.*` cho secrets. **`app.name` / `app.env` không cần lặp** — `app.name` chỉ client; `app.env` server auto từ `process.env.NODE_ENV` (Wrangler `vars.NODE_ENV`).
 
 ```ts
-import { defineServerConfig } from 'duneta/server/configs';
+import { defineServerConfig } from 'duneta/config/server';
 
 export default defineServerConfig({
   database: {
@@ -75,10 +69,10 @@ Bindings (Hyperdrive, R2, …) — `wrangler.jsonc` / `wrangler.production.jsonc
 
 ## Client config (web)
 
-`duneta.client.config.ts`:
+`config/client.ts`:
 
 ```ts
-import { defineClientConfig } from 'duneta/client/configs';
+import { defineClientConfig } from 'duneta/config/client';
 
 export default defineClientConfig({
   app: { name: 'my-app', env: 'development' },
@@ -90,17 +84,17 @@ export default defineClientConfig({
 
 ## Server config (API) — opt in
 
-`duneta.server.config.ts` khi cần DB/auth — xem dogfood monorepo. Kèm mount route + register service trong `app/api/`.
+`config/server.ts` khi cần DB/auth — xem `examples/dogfood`. Kèm mount route trong `routes/api.ts` và register service trong `app/providers/app-service-provider.ts`.
 
 ### Đọc config lúc runtime (API)
 
 ```ts
-import { getConfig } from 'duneta/server/configs';
+import { getConfig } from 'duneta/config/server';
 ```
 
 ## Logging
 
-Workers **không có filesystem** — stdout JSON. Set trong `duneta.server.config.ts`:
+Workers **không có filesystem** — stdout JSON. Set trong `config/server.ts`:
 
 ```ts
 logging: { enabled: true, format: 'json' },
@@ -108,7 +102,7 @@ logging: { enabled: true, format: 'json' },
 
 ## Cache / Storage / Auth / Rate limit / Cron
 
-Cấu hình trong `duneta.server.config.ts`. Chi tiết storage: [storage](./api/storage.md). Cron: [cron](./api/cron.md).
+Cấu hình trong `config/server.ts`. Chi tiết storage: [storage](./api/storage.md). Cron: [cron](./api/cron.md).
 
 ## Worker bindings
 

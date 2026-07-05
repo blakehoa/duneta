@@ -16,7 +16,7 @@ Drizzle → Postgres
 
 ## BaseController
 
-`packages/server/http/base-controller.ts`
+`packages/duneta/http/base-controller.ts`
 
 Helpers có sẵn:
 
@@ -32,11 +32,11 @@ Helpers có sẵn:
 ### Ví dụ controller
 
 ```ts
-// app/api/controllers/post-controller.ts
+// app/http/controllers/PostController.ts
 import type { Context } from 'hono';
-import { BaseController } from 'duneta/server/http';
-import type { RequestContext } from 'duneta/server/middlewares';
-import type { PostRepository } from '../repositories/post-repository';
+import { BaseController } from 'duneta/http';
+import type { RequestContext } from 'duneta/middleware/http';
+import type { PostRepository } from '../../Repositories/PostRepository';
 
 export class PostController extends BaseController {
   constructor(private readonly posts: PostRepository) {
@@ -59,7 +59,7 @@ Handler phải là **arrow function property** (`index = async (c) =>`) để `r
 
 ## BaseRepository
 
-`packages/server/http/base-repository.ts`
+`packages/duneta/http/base-repository.ts`
 
 CRUD generic trên Drizzle table có cột `id`:
 
@@ -74,9 +74,9 @@ CRUD generic trên Drizzle table có cột `id`:
 ### Ví dụ repository
 
 ```ts
-// app/api/repositories/post-repository.ts
-import { BaseRepository } from 'duneta/server/http';
-import { post } from './schemas/post';
+// app/repositories/PostRepository.ts
+import { BaseRepository } from 'duneta/http';
+import { post } from './Schemas/Post';
 
 export class PostRepository extends BaseRepository<typeof post> {
   constructor() {
@@ -91,16 +91,16 @@ export class PostRepository extends BaseRepository<typeof post> {
 
 `db` bind tự động lúc boot qua `BaseRepository.bindDb()` — repository chỉ cần truyền `table`.
 
-Schema Drizzle đặt trong `repositories/schemas/` hoặc `packages/server/repositories/schemas/` (auth schema ship sẵn).
+Schema Drizzle đặt trong `repositories/schemas/` hoặc `packages/duneta/repositories/schemas/` (auth schema ship sẵn).
 
 ## Đăng ký + route — checklist
 
 1. Tạo schema Drizzle (nếu table mới)
 2. Tạo `PostRepository extends BaseRepository`
 3. Tạo `PostController extends BaseController`
-4. Đăng ký trong `api/services.ts`
-5. Thêm `defineGroup` trong `routers/`
-6. Gắn group vào `createAppRouter`
+4. Đăng ký trong `app/providers/app-service-provider.ts`
+5. Thêm `defineGroup` trong `app/http/controllers/*/routes.ts`
+6. Gắn group vào `routes/api.ts`
 
 ## Auth trong controller
 

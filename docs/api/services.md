@@ -1,8 +1,8 @@
 # Services (DI)
 
 ```ts
-import { defineServices } from 'duneta/server/container';
-import { UserRepository } from 'duneta/server/repositories';
+import { defineServices } from 'duneta/http/container';
+import { UserRepository } from 'duneta/http/repositories';
 
 export const registerServices = defineServices({
   repositories: {

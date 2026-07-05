@@ -12,23 +12,19 @@ wrangler.jsonc  →  worker.ts  →  fetch(request, env)
 
 | Path | Handler |
 |------|---------|
-| `/api/*` | Hono API (`defineServer` + `app/api/router.ts`) |
+| `/api/*` | Hono API (`createDunetaWorker` + `routes/api.ts`) |
 | static | `createDunetaWorker` → ASSETS (auto) |
 | `/*` | React Router SSR |
 
 ## Config load
 
 ```ts
-const api = defineServer({
-  importConfig: () => import('./duneta.server.config'),
-  ...
-});
-
-return api.fetch(request);
+import { createDunetaWorker } from 'duneta/worker';
+export default createDunetaWorker();
 ```
 
-- Web: `duneta.client.config.ts` (Vite only)
-- API: `duneta.server.config.ts` (lazy, runtime `process.env` từ Wrangler secrets)
+- Web: `config/client.ts` (Vite only)
+- API: `config/server.ts` (lazy, runtime `process.env` từ Wrangler secrets)
 
 ## Local vs production
 
@@ -36,8 +32,8 @@ return api.fetch(request);
 |---|---|---|
 | Runtime | Vite + Workers (HMR) | Cloudflare edge |
 | Secrets | `.env` → Wrangler dev | `wrangler secret put` |
-| Web config | `duneta.client.config.ts` | same |
-| API config | `duneta.server.config.ts` | same (runtime env) |
+| Web config | `config/client.ts` | same |
+| API config | `config/server.ts` | same (runtime env) |
 
 ## CLI
 

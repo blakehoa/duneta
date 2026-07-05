@@ -1,55 +1,55 @@
-# `duneta/client`
+# Client-side layers (`duneta/*`)
 
-Framework React Router web — layered frontend lib.
+Framework React Router web — layered frontend lib, part of the single `duneta` package.
 
 ## Layers
 
 ```text
-duneta/client/ui        → Duneta* components (design system)
-duneta/client/http      → BaseHttpService, HttpService, http instance
-duneta/client/query     → React Query + useHttpQuery / useHttpMutation
-duneta/client/form      → useDunetaForm (RHF + Zod validators)
-duneta/client/feedback  → DunetaHttpErrorView, DunetaAsyncBoundary
-duneta/client/i18n      → useLocale, setClientLocale
-duneta/client/helpers   → dayjs, cookie utils
-duneta/client/providers → DunetaAppProviders, DunetaThemeProvider, DunetaQueryProvider
-duneta/client/image    → DunetaImage (giống next/image)
-duneta/client/script   → DunetaScript (giống next/script)
-duneta/client/router    → Link hooks, meta, createHttpLoader
-duneta/client/core      → cn, constants
-duneta/client/validators → Zod schema factories
-duneta/client/configs   → duneta.client.config.ts (Vite / sync)
+duneta/views/component        → Duneta* components (design system)
+duneta/http      → BaseHttpService, HttpService, http instance
+duneta/query     → React Query + useHttpQuery / useHttpMutation
+duneta/views/form      → useDunetaForm (RHF + Zod validators)
+duneta/views/feedback  → DunetaHttpErrorView, DunetaAsyncBoundary
+duneta/i18n      → useLocale, setClientLocale
+duneta/helpers   → dayjs, cookie utils
+duneta/views/providers → DunetaAppProviders, DunetaThemeProvider, DunetaQueryProvider
+duneta/views/image    → DunetaImage (giống next/image)
+duneta/views/script   → DunetaScript (giống next/script)
+duneta/views/router    → Link hooks, meta, createHttpLoader
+duneta/core      → cn, constants
+duneta/validators → Zod schema factories
+duneta/config/client → config/client.ts (Vite / sync)
 starter/                 → default routers + layouts (sync only)
 ```
 
-## UI (`duneta/client/ui`)
+## UI (`duneta/views/component`)
 
 HeroUI v3 wrappers as `Duneta*`:
 
 ```tsx
-import { DunetaButton, DunetaCard } from 'duneta/client/ui';
-import { DunetaTabs } from 'duneta/client/ui/DunetaTabs';
-import { DunetaToast, showDunetaToast } from 'duneta/client/ui';
+import { DunetaButton, DunetaCard } from 'duneta/views/component';
+import { DunetaTabs } from 'duneta/views/component/DunetaTabs';
+import { DunetaToast, showDunetaToast } from 'duneta/views/component';
 
 showDunetaToast.success('Saved');
 ```
 
 `showDunetaToast` imperative API nằm trong `components/DunetaToast/` (cùng pattern `DunetaAlertDialog`).
 
-Source lives in `packages/client/components/` (compiled to `dist/components/`).
+Source lives in `packages/duneta/components/` (compiled to `dist/components/`).
 
 Regenerate HeroUI wrappers:
 
 ```bash
-pnpm --filter duneta/client generate:ui
+pnpm --filter duneta generate:ui
 ```
 
-## HTTP (`duneta/client/http`)
+## HTTP (`duneta/http`)
 
 `BaseHttpService` abstract class + default `http` instance. Override hooks when you need auth headers, error mapping, etc.
 
 ```ts
-import { BaseHttpService, http, HttpError } from 'duneta/client/http';
+import { BaseHttpService, http, HttpError } from 'duneta/http';
 
 // Default — config.api.baseUrl, credentials: same-origin, headers below
 const health = await http.json<{ ok: boolean }>('/health');
@@ -97,7 +97,7 @@ Default per request: `Accept: application/json`, `X-Duneta-Timezone` (browser TZ
 CSRF preset (when server enables CSRF):
 
 ```ts
-import { createCsrfHttpService } from 'duneta/client/http';
+import { createCsrfHttpService } from 'duneta/http';
 
 export const http = createCsrfHttpService();
 ```
@@ -105,16 +105,16 @@ export const http = createCsrfHttpService();
 Custom transport (axios, etc.):
 
 ```ts
-import { createHttpService, createFetchTransport } from 'duneta/client/http';
+import { createHttpService, createFetchTransport } from 'duneta/http';
 
 const http = createHttpService({ transport: createFetchTransport(myFetch) });
 ```
 
-## Query (`duneta/client/query`)
+## Query (`duneta/query`)
 
 ```tsx
 import { Suspense } from 'react';
-import { useHttpQuery, useHttpMutation } from 'duneta/client/query';
+import { useHttpQuery, useHttpMutation } from 'duneta/query';
 
 // Client fetch (default)
 function HealthClient() {
@@ -140,7 +140,7 @@ function HealthSsr() {
 |----------|------|
 | Interactive UI + cache/refetch | `useHttpQuery` (default) |
 | SSR + React Query cache | `useHttpQuery({ ssr: true })` + `<Suspense>` |
-| SSR đơn giản, `useLoaderData` | `createHttpLoader` từ `duneta/client/router` |
+| SSR đơn giản, `useLoaderData` | `createHttpLoader` từ `duneta/views/router` |
 
 ```tsx
 const createPost = useHttpMutation({ path: '/posts', method: 'POST' });
@@ -148,10 +148,10 @@ const createPost = useHttpMutation({ path: '/posts', method: 'POST' });
 
 Starter routers use a single root file: `layout.tsx` (document + providers + `Outlet`). See [web routes](../web/routes.md).
 
-## Providers (`duneta/client/providers`)
+## Providers (`duneta/views/providers`)
 
 ```tsx
-import { DunetaAppProviders, DunetaThemeProvider } from 'duneta/client/providers';
+import { DunetaAppProviders, DunetaThemeProvider } from 'duneta/views/providers';
 ```
 
 | Export | Mô tả |
@@ -165,12 +165,12 @@ layout.tsx   → {children} + Scripts
 layout.tsx   → DunetaAppProviders → Outlet → page
 ```
 
-## Form (`duneta/client/form`)
+## Form (`duneta/views/form`)
 
 ```tsx
 import { z } from 'zod';
-import { dunetaFieldError, useDunetaForm } from 'duneta/client/form';
-import { emailSchema, passwordSchema } from 'duneta/client/validators';
+import { dunetaFieldError, useDunetaForm } from 'duneta/views/form';
+import { emailSchema, passwordSchema } from 'duneta/validators';
 
 const schema = z.object({ email: emailSchema(), password: passwordSchema({ strong: true }) });
 
@@ -180,62 +180,62 @@ const { register, submit, formState } = useDunetaForm({
 });
 ```
 
-## i18n (`duneta/client/i18n`)
+## i18n (`duneta/i18n`)
 
-Locale list và default lấy từ `duneta.client.config.ts` → `locale.default`, `locale.supported`.
+Locale list và default lấy từ `config/client.ts` → `locale.default`, `locale.supported`.
 
 ```ts
-// duneta.client.config.ts
+// config/client.ts
 locale: { default: 'vi', supported: ['vi', 'en', 'ja'] },
 ```
 
 ```tsx
-import { getLocaleConfig, useLocale } from 'duneta/client/i18n';
+import { getLocaleConfig, useLocale } from 'duneta/i18n';
 
 const { locale, setLocale, supportedLocales, defaultLocale } = useLocale();
 ```
 
-## Feedback (`duneta/client/feedback`)
+## Feedback (`duneta/views/feedback`)
 
 ```tsx
-import { DunetaHttpErrorView, DunetaAsyncBoundary } from 'duneta/client/feedback';
+import { DunetaHttpErrorView, DunetaAsyncBoundary } from 'duneta/views/feedback';
 
 <DunetaHttpErrorView error={error} onRetry={refetch} />
 ```
 
 Toast imperative API nằm cùng component — xem `DunetaToast` bên dưới.
 
-## Image (`duneta/client/image`)
+## Image (`duneta/views/image`)
 
 ```tsx
 import {
   DunetaImage,
   createDunetaImageLoader,
   dunetaPassthroughImageLoader,
-} from 'duneta/client/image';
+} from 'duneta/views/image';
 ```
 
 | Export | Mô tả |
 |--------|------|
-| `DunetaImage` | Responsive image + optimization loader (`/duneta/image`) |
+| `DunetaImage` | Responsive image + optimization loader (`/duneta/views/image`) |
 | `createDunetaImageLoader` | Loader mặc định qua route optimize |
 | `dunetaPassthroughImageLoader` | Bỏ qua optimize (blob/data URL) |
 
-## Script (`duneta/client/script`)
+## Script (`duneta/views/script`)
 
 ```tsx
-import { DunetaScript } from 'duneta/client/script';
+import { DunetaScript } from 'duneta/views/script';
 ```
 
 | Export | Mô tả |
 |--------|------|
 | `DunetaScript` | Third-party scripts (`afterInteractive` / `lazyOnload`) |
 
-## Router (`duneta/client/router`)
+## Router (`duneta/views/router`)
 
 ```tsx
-import { DunetaLink } from 'duneta/client/ui';
-import { defineMeta, createDynamicComponent, useRouter } from 'duneta/client/router';
+import { DunetaLink } from 'duneta/views/component';
+import { defineMeta, createDynamicComponent, useRouter } from 'duneta/views/router';
 ```
 
 | Export | Mô tả |
@@ -249,13 +249,13 @@ import { defineMeta, createDynamicComponent, useRouter } from 'duneta/client/rou
 export const loader = createHttpLoader<Post[]>('/api/posts');
 ```
 
-## Core (`duneta/client/core`)
+## Core (`duneta/core`)
 
 ```ts
-import { cn, IMAGE_OPTIMIZATION_PATH } from 'duneta/client/core';
+import { cn, IMAGE_OPTIMIZATION_PATH } from 'duneta/core';
 ```
 
-## Validators (`duneta/client/validators`)
+## Validators (`duneta/validators`)
 
 Zod schema factories — import all or by category:
 
@@ -275,11 +275,11 @@ import {
   emailSchema,
   passwordSchema,
   passwordsMatch,
-} from 'duneta/client/validators';
+} from 'duneta/validators';
 
 // Or granular imports:
-import { emailSchema } from 'duneta/client/validators/string';
-import { passwordSchema, passwordsMatch } from 'duneta/client/validators/auth';
+import { emailSchema } from 'duneta/validators/string';
+import { passwordSchema, passwordsMatch } from 'duneta/validators/auth';
 
 const signupSchema = z
   .object({
@@ -295,10 +295,10 @@ const signupSchema = z
 
 | Path | Nội dung |
 |------|----------|
-| `duneta/client/configs` | Web config |
-| `duneta/client/configs/vite` | `createDunetaViteConfig` |
-| `duneta/client/themes/globals.css` | Tailwind + HeroUI entry |
+| `duneta/config/client` | Web config |
+| `duneta/vite` | `createDunetaViteConfig` |
+| `duneta/views/theme/globals.css` | Tailwind + HeroUI entry |
 
 ## Starter (not a public import)
 
-`starter/routers` + `starter/layouts` — merged into `app/.router-runtime/` by `duneta sync`.
+`starter/routers` + `starter/layouts` — merged into `app/.router-runtime/` by `duneta dev` / `duneta build`.

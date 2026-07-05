@@ -1,31 +1,29 @@
-# API app (`app/api`)
+# API app (`routes/api.ts` + `app/http/controllers`)
 
 ## Cấu trúc
 
 ```text
-app/api/
-├── router.ts          # createAppRouter
-├── services.ts        # registerServices (DI)
-├── permissions.ts     # resolvePermissions
-├── controllers/       # *-controller.ts (sync)
-├── repositories/      # *-repository.ts (sync)
-└── routers/           # *.routes.ts (sync)
+routes/
+└── api.ts
+app/
+├── providers/app-service-provider.ts
+└── http/controllers/
 ```
 
-Config web: `duneta.client.config.ts`. API: `duneta.server.config.ts` (lazy load trong worker).
+Config web: `config/client.ts`. API: `config/server.ts` (lazy load trong worker).
 
-App scaffold (`create-duneta-app`): `services.ts` chỉ `HealthController`, `router.ts` chỉ `healthRoutes`. DB/auth là opt-in — xem [Kiến trúc](../architecture.md).
+App scaffold (`create-duneta-app`): `routes/api.ts` chỉ routes tối thiểu. DB/auth là opt-in — xem [Kiến trúc](../architecture.md).
 
 ## Entry
 
-API bootstrap trong `worker.ts` — import `router.ts`, `services.ts`, `permissions.ts`, gọi `defineServer` cho `/api/*`.
+API bootstrap trong `worker.ts` — `createDunetaWorker()` tự load `routes/api.ts` + `app/providers/app-service-provider.ts`.
 
 ## Hooks
 
 | Hook | File | Vai trò |
 |------|------|---------|
-| `registerServices` | `services.ts` | DI controllers + repositories |
-| `createAppRouter` | `router.ts` | Route groups |
-| `resolvePermissions` | `permissions.ts` | Grants / roles sau login |
+| `registerServices` | `app/providers/app-service-provider.ts` | DI controllers + repositories |
+| `api routes` | `routes/api.ts` | Route groups |
+| `resolvePermissions` | `app/providers/app-service-provider.ts` | Grants / roles sau login |
 
 Chi tiết: [services](./services.md), [sync](./sync.md), [runtime](./runtime.md).

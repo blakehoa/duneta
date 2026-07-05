@@ -1,6 +1,6 @@
 # Storage
 
-File: `packages/server/http/base-storage-controller.ts`
+File: `packages/duneta/http/base-storage-controller.ts`
 
 ```text
 StorageConfig → resolveBackend() → upload | head | delete
@@ -11,7 +11,7 @@ Drivers: `s3` · `r2` (Cloudflare R2, S3-compatible API) · `custom`
 ## Config
 
 ```ts
-import { storage } from 'duneta/server/configs';
+import { storage } from 'duneta/config/server';
 
 storage({
   driver: 'r2',

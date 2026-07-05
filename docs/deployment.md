@@ -3,7 +3,7 @@
 ```text
 your-domain.com/*
   createDunetaWorker (worker.ts)
-    /api/*  → Hono (duneta/server)
+    /api/*  → Hono (`duneta/http`, `duneta/middleware/http`)
     static  → ASSETS (auto — app/build/client)
     /*      → React Router SSR  (app/build/server)
 ```
@@ -18,13 +18,13 @@ pnpm deploy   # build + wrangler deploy
 
 ## Production checklist
 
-- [ ] **`duneta.server.config.ts`** — `process.env.*` refs (không literal secrets)
+- [ ] **`config/server.ts`** — `process.env.*` refs (không literal secrets)
 - [ ] **`wrangler secret put`** — DATABASE_URL, AUTH_SECRET, CSRF_SECRET
 - [ ] **`secrets.required`** trong `wrangler.jsonc`
 - [ ] **CI build sạch** — không `.env` / secret env vars lúc `pnpm build`
 - [ ] **Hyperdrive** (optional) — connection string từ Hyperdrive → paste vào `database.connections.*.url`
 - [ ] **Optional** — Redis HTTP URL trong `cache` config (distributed cache + rate limit)
-- [ ] **Logging** — JSON stdout (`logging.enabled` in `duneta.server.config.ts`)
+- [ ] **Logging** — JSON stdout (`logging.enabled` in `config/server.ts`)
 - [ ] **Auth cookies** — `secure: true` applied automatically when `NODE_ENV=production`
 
 ## wrangler configs
@@ -52,7 +52,7 @@ Static assets (`app/build/client`) được gắn tự động trong `app/build/
 
 ## Config
 
-Secrets: `wrangler secret put` → runtime `process.env` → `duneta.server.config.ts`. Web: `duneta.client.config.ts` only.
+Secrets: `wrangler secret put` → runtime `process.env` → `config/server.ts`. Web: `config/client.ts` only.
 
 ## Observability
 

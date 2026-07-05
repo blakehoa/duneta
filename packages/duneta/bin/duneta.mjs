@@ -4,11 +4,9 @@ import fs, { existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { resolveDunetaRoots } from '../scripts/resolve-roots.mjs';
 
 const require = createRequire(import.meta.url);
-const dunetaRoot = path.dirname(fileURLToPath(new URL('../', import.meta.url)));
-const { clientRoot, serverRoot } = resolveDunetaRoots(import.meta.url);
+const dunetaRoot = fileURLToPath(new URL('../', import.meta.url));
 const projectRoot = process.cwd();
 const appRoot = path.join(projectRoot, 'app');
 
@@ -103,10 +101,10 @@ function makeController(name) {
   const base = kebab(name);
   const className = `${pascal(name)}Controller`;
   writeNewFile(
-    path.join(appRoot, 'api/controllers', `${base}-controller.ts`),
+    path.join(appRoot, 'http/controllers', `${base}-controller.ts`),
     `import type { Context } from 'hono';
-import { BaseController } from 'duneta/server/http';
-import type { RequestContext } from 'duneta/server/middlewares';
+import { BaseController } from 'duneta/http';
+import type { RequestContext } from 'duneta/middleware/http';
 
 export class ${className} extends BaseController {
   index = (c: Context<RequestContext>) => {
@@ -122,13 +120,16 @@ export class ${className} extends BaseController {
 }
 
 function makeRepository(name) {
-  const base = kebab(name);
   const className = `${pascal(name)}Repository`;
+  const tableName = camel(name);
   writeNewFile(
-    path.join(appRoot, 'api/repositories', `${base}-repository.ts`),
-    `export class ${className} {
-  all() {
-    return [];
+    path.join(appRoot, 'repositories', `${kebab(name)}-repository.ts`),
+    `import { BaseRepository } from 'duneta/http';
+// TODO: import your Drizzle table, e.g. \`import { ${tableName} } from '~/database/schemas/${kebab(name)}';\`
+
+export class ${className} extends BaseRepository<typeof ${tableName}> {
+  constructor() {
+    super(${tableName});
   }
 }
 `,
@@ -140,9 +141,9 @@ function makeRoute(name) {
   const controller = `${pascal(name)}Controller`;
   const exportName = `${camel(name)}Routes`;
   writeNewFile(
-    path.join(appRoot, 'api/routers', `${base}.routes.ts`),
-    `import { resolveController } from 'duneta/server/http';
-import { defineGroup } from 'duneta/server/routers';
+    path.join(appRoot, 'http/controllers', base, 'routes.ts'),
+    `import { resolveController } from 'duneta/http';
+import { defineGroup } from 'duneta/http/router';
 
 export const ${exportName} = defineGroup({
   path: '${routePathFromName(name)}',
@@ -156,29 +157,29 @@ export const ${exportName} = defineGroup({
 }
 
 function makePolicy(name) {
-  const base = kebab(name);
-  const exportName = `${camel(name)}Policy`;
+  const className = `${pascal(name)}Policy`;
+  const resource = kebab(name);
   writeNewFile(
-    path.join(appRoot, 'api/policies', `${base}-policy.ts`),
-    `import type { Permission, PolicySubject } from 'duneta/server/permissions';
+    path.join(appRoot, 'policies', `${resource}-policy.ts`),
+    `import type { Context } from 'hono';
+import { BasePolicy } from 'duneta/permission';
+import type { RequestContext } from 'duneta/middleware/http';
 
-export const ${exportName} = {
-  can(permission: Permission, subject?: PolicySubject) {
-    void subject;
-    return permission === '*';
-  },
-};
+export class ${className} extends BasePolicy {
+  static list(c: Context<RequestContext>) {
+    this.assertAny(c, ['${resource}.read', '${resource}.*', '*']);
+  }
+}
 `,
   );
 }
 
 function makeMiddleware(name) {
-  const base = kebab(name);
   const exportName = `${camel(name)}Middleware`;
   writeNewFile(
-    path.join(appRoot, 'api/middlewares', `${base}.ts`),
+    path.join(appRoot, 'http/middleware', `${kebab(name)}-middleware.ts`),
     `import { createMiddleware } from 'hono/factory';
-import type { RequestContext } from 'duneta/server/middlewares';
+import type { RequestContext } from 'duneta/middleware/http';
 
 export const ${exportName} = createMiddleware<RequestContext>(async (_c, next) => {
   await next();
@@ -192,10 +193,10 @@ function makeCron(name) {
   const cronName = base.endsWith('-cron') ? base.slice(0, -'-cron'.length) : base;
   const fileBase = `${cronName}-cron`;
   const className = `${pascal(cronName)}Cron`;
-  const cronDir = path.join(appRoot, 'api/cron');
+  const cronDir = path.join(projectRoot, 'routes');
   writeNewFile(
     path.join(cronDir, `${fileBase}.ts`),
-    `import { BaseKernelCron, type CronJobContext } from 'duneta/server/cron';
+    `import { BaseKernelCron, type CronJobContext } from 'duneta/http/cron';
 
 export class ${className} extends BaseKernelCron {
   readonly name = '${cronName}';
@@ -211,7 +212,7 @@ export class ${className} extends BaseKernelCron {
 }
 
 function defaultCronKernel() {
-  return `import { defineCronKernel } from 'duneta/server/cron';
+  return `import { defineCronKernel } from 'duneta/http/cron';
 
 export const registerCron = defineCronKernel([
   // Register cron classes here.
@@ -220,7 +221,7 @@ export const registerCron = defineCronKernel([
 }
 
 function updateCronKernel(cronDir, fileBase, className) {
-  const kernelFile = path.join(cronDir, 'index.ts');
+  const kernelFile = path.join(cronDir, 'console.ts');
   if (!existsSync(kernelFile)) {
     writeNewFile(kernelFile, defaultCronKernel());
   }
@@ -252,56 +253,36 @@ function updateCronKernel(cronDir, fileBase, className) {
 
 function packagesBuilt() {
   return (
-    existsSync(path.join(clientRoot, 'dist/components/index.js')) &&
-    existsSync(path.join(serverRoot, 'dist/http/index.js')) &&
-    existsSync(path.join(serverRoot, 'dist/cron/index.js'))
+    existsSync(path.join(dunetaRoot, 'dist/views/component/index.js')) &&
+    existsSync(path.join(dunetaRoot, 'dist/http/index.js')) &&
+    existsSync(path.join(dunetaRoot, 'dist/http/cron/index.js'))
   );
-}
-
-function findMonorepoRoot() {
-  let dir = projectRoot;
-  while (dir !== path.dirname(dir)) {
-    if (existsSync(path.join(dir, 'pnpm-workspace.yaml'))) return dir;
-    dir = path.dirname(dir);
-  }
-  return null;
 }
 
 function buildPackagesIfNeeded() {
   if (packagesBuilt()) return;
-  const monorepoRoot = findMonorepoRoot();
-  if (!monorepoRoot) {
-    console.error('[duneta] duneta/client or duneta/server is not built. Reinstall duneta.');
+  if (!existsSync(path.join(dunetaRoot, 'tsconfig.build.json'))) {
+    console.error('[duneta] bundled package sources are missing.');
     process.exit(1);
   }
-  console.log('[duneta] building duneta-client and duneta-server…');
-  run('pnpm', ['--filter', 'duneta-client', '--filter', 'duneta-server', 'run', 'build'], monorepoRoot);
+  console.log('[duneta] building duneta package…');
+  run('pnpm', ['--dir', dunetaRoot, 'run', 'build'], projectRoot);
 }
 
 async function loadSyncRouters() {
-  const mod = await import(pathToFileURL(path.join(clientRoot, 'scripts/sync-routers.mjs')).href);
+  const mod = await import(pathToFileURL(path.join(dunetaRoot, 'scripts/sync-routers.mjs')).href);
   return mod.syncRouters;
 }
 
-async function loadSyncApi() {
-  const mod = await import(pathToFileURL(path.join(serverRoot, 'scripts/sync-api.mjs')).href);
-  return mod.syncApi;
-}
-
 function loadWebConfig() {
-  const script = path.join(clientRoot, 'scripts/load-config.mjs');
+  const script = path.join(dunetaRoot, 'scripts/load-config.mjs');
   const tsx = bin('tsx', 'dist/cli.mjs');
   const r = spawnSync(process.execPath, [tsx, script, projectRoot], {
     encoding: 'utf8',
     cwd: projectRoot,
   });
-  if (r.status !== 0) throw new Error(r.stderr || 'Failed to load duneta.client.config.ts');
+  if (r.status !== 0) throw new Error(r.stderr || 'Failed to load config/client.ts');
   return JSON.parse(r.stdout);
-}
-
-async function sync() {
-  const syncApi = await loadSyncApi();
-  syncApi(path.join(appRoot, 'api'));
 }
 
 function walkFiles(dir, predicate, out = []) {
@@ -354,13 +335,20 @@ function extractBalanced(source, start) {
 function routeNamesFromRouter(routerSource) {
   const names = new Set();
   const composeIndex = routerSource.indexOf('composeRouter');
-  if (composeIndex === -1) return names;
-  const arrayStart = routerSource.indexOf('[', composeIndex);
-  if (arrayStart === -1) return names;
-  const body = extractBalanced(routerSource, arrayStart);
-  for (const match of body.matchAll(/\b([a-zA-Z_$][\w$]*)(?:\s*\(\s*\))?/g)) {
-    const name = match[1];
-    if (!['composeRouter'].includes(name)) names.add(name);
+  if (composeIndex !== -1) {
+    const arrayStart = routerSource.indexOf('[', composeIndex);
+    if (arrayStart !== -1) {
+      const body = extractBalanced(routerSource, arrayStart);
+      for (const match of body.matchAll(/\b([a-zA-Z_$][\w$]*)(?:\s*\(\s*\))?/g)) {
+        const name = match[1];
+        if (!['composeRouter'].includes(name)) names.add(name);
+      }
+    }
+  }
+  // `routes/api.ts` api(): `return [imageMediaStorageRoutes]`
+  for (const match of routerSource.matchAll(/\b([a-zA-Z_$][\w$]*Routes)\b/g)) {
+    if (match[1] === 'DunetaPageRoutes' || match[1] === 'DunetaApiRoutes') continue;
+    names.add(match[1]);
   }
   return names;
 }
@@ -407,14 +395,14 @@ function parseRouteGroups(file) {
 function frameworkRouteGroups(routerSource) {
   const groups = [];
   if (/\bhealthRoutes\b/.test(routerSource)) {
-    groups.push({ source: 'duneta/server/routers', endpoints: [{ method: 'GET', path: '/health' }] });
+    groups.push({ source: 'duneta/http/router', endpoints: [{ method: 'GET', path: '/health' }] });
   }
   if (/\bmeRoutes\b/.test(routerSource)) {
-    groups.push({ source: 'duneta/server/routers', endpoints: [{ method: 'GET', path: '/me' }] });
+    groups.push({ source: 'duneta/http/router', endpoints: [{ method: 'GET', path: '/me' }] });
   }
   if (/\b(createUsersRoutes|usersRoutes)\b/.test(routerSource)) {
     groups.push({
-      source: 'duneta/server/routers',
+      source: 'duneta/http/router',
       endpoints: [
         { method: 'GET', path: '/users' },
         { method: 'GET', path: '/users/:id' },
@@ -425,14 +413,19 @@ function frameworkRouteGroups(routerSource) {
 }
 
 function listRoutes() {
-  const apiRoot = path.join(appRoot, 'api');
-  const routerFile = path.join(apiRoot, 'router.ts');
-  const routerSource = readIfExists(routerFile);
+  const appSourceRoot = appRoot;
+  const apiRoutesFile = path.join(projectRoot, 'routes', 'api.ts');
+  const routerSource = readIfExists(apiRoutesFile);
   const mounted = routeNamesFromRouter(routerSource);
-  const routeFiles = walkFiles(apiRoot, (name) => name === 'routes.ts' || name.endsWith('.routes.ts'));
+  const routeFiles = walkFiles(
+    appSourceRoot,
+    (name) => name === 'routes.ts' || name.endsWith('.routes.ts'),
+  );
   const rows = [];
 
-  for (const group of frameworkRouteGroups(routerSource)) {
+  // `routes/api.ts` always mounts framework defaults (health/me/users).
+  const frameworkSource = 'healthRoutes meRoutes createUsersRoutes';
+  for (const group of frameworkRouteGroups(frameworkSource)) {
     for (const endpoint of group.endpoints) {
       rows.push({ ...endpoint, source: group.source });
     }
@@ -466,13 +459,12 @@ function listRoutes() {
 async function buildWeb() {
   const syncRouters = await loadSyncRouters();
   const webConfig = loadWebConfig();
-  syncRouters(appRoot, clientRoot, webConfig);
+  syncRouters(projectRoot, appRoot, dunetaRoot, webConfig);
   run(process.execPath, [bin('@react-router/dev'), 'build'], projectRoot);
 }
 
 async function buildAll() {
   buildPackagesIfNeeded();
-  await sync();
   await buildWeb();
 }
 
@@ -485,9 +477,8 @@ try {
       break;
     case 'dev': {
       buildPackagesIfNeeded();
-      await sync();
       const syncRouters = await loadSyncRouters();
-      syncRouters(appRoot, clientRoot, loadWebConfig());
+      syncRouters(projectRoot, appRoot, dunetaRoot, loadWebConfig());
       console.log('[duneta] http://localhost:8787 (HMR)');
       run(process.execPath, [bin('@react-router/dev'), 'dev', ...rest], projectRoot);
       break;

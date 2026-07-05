@@ -26,9 +26,9 @@ npx create-duneta-app my-app --force
 ## What you get
 
 - React Router 7 web app (`app/pages/`)
-- Hono API on the same Worker (`app/api/`)
+- Hono API on the same Worker (`routes/api.ts` + `app/http/controllers/`)
 - `duneta` CLI for dev, build, and deploy
-- `duneta.client.config.ts` and `duneta.server.config.ts`
+- `config/client.ts` and `config/server.ts`
 - Wrangler config for Cloudflare Workers
 
 ```json
@@ -58,8 +58,6 @@ Dev server: `http://localhost:8787` (HMR).
 | npm | Role |
 |-----|------|
 | [`duneta`](https://www.npmjs.com/package/duneta) | CLI + bundled client & server |
-| [`duneta-client`](https://www.npmjs.com/package/duneta-client) | Web kit (standalone) |
-| [`duneta-server`](https://www.npmjs.com/package/duneta-server) | API utilities (standalone) |
 
 ## License
 

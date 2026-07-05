@@ -1,2 +1,4 @@
 packages:
-  - packages/*
+  - packages/duneta
+  - packages/create-duneta-app
+  - examples/dogfood

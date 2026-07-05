@@ -1,0 +1,32 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["dom", "dom.iterable", "ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "duneta": ["."],
+      "duneta/*": ["./*"]
+    },
+    "noEmit": true,
+    "rootDir": "."
+  },
+  "include": [
+    "auth",
+    "config",
+    "core",
+    "helpers",
+    "http",
+    "i18n",
+    "middleware",
+    "permission",
+    "query",
+    "starter",
+    "validators",
+    "views",
+    "worker"
+  ],
+  "exclude": ["dist", "node_modules"]
+}

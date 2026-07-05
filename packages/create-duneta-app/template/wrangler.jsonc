@@ -7,6 +7,6 @@
   "vars": {
     "NODE_ENV": "development"
   },
-  // Cron triggers (requires `cron.enabled: true` in duneta.server.config.ts):
+  // Cron triggers (requires `cron.enabled: true` in config/server.ts):
   // "triggers": { "crons": ["0 0 * * *"] }
 }

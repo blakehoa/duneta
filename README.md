@@ -15,28 +15,30 @@ pnpm deploy
 ```
 
 Lần đầu: đăng nhập Cloudflare (`wrangler login` hoặc `CLOUDFLARE_API_TOKEN`).  
-App mới chỉ health check — DB/auth opt-in trong `duneta.server.config.ts` khi cần.
+App mới chỉ health check — DB/auth opt-in trong `config/server.ts` khi cần.
 
 Production bindings: xem `wrangler.production.jsonc.example` (Hyperdrive, R2).
 
 ## Dev local
 
 ```bash
-pnpm dev    # HMR → http://localhost:8787 — secrets trong `.env`, map trong `duneta.server.config.ts`
+pnpm dev    # HMR → http://localhost:8787 — secrets trong `.env`, map trong `config/server.ts`
 ```
 
 ## Cấu trúc
 
 ```text
-duneta.client.config.ts       # web (theme, api)
-duneta.server.config.ts       # API (database, auth, …)
+config/client.ts       # web (theme, api)
+config/server.ts       # API (database, auth, …)
 vite.config.mts        # Vite + Cloudflare plugin
 react-router.config.mts
 wrangler.jsonc         # Worker dev (deploy → app/build/server/wrangler.json)
 
 worker.ts              # entry
+routes/                # web/api/console route declarations
 app/                   # source only
-├── api/               # backend
+├── providers/         # registerServices + resolvePermissions
+├── http/              # backend modules
 ├── pages/             # web pages
 ├── themes/            # CSS
 └── build/             # generated

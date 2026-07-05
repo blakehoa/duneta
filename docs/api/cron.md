@@ -23,11 +23,11 @@ export default {
 pnpm duneta make:cron delete-user-session
 ```
 
-The command creates the class and adds it to `app/api/cron/index.ts`.
+The command creates the class and adds it to `routes/console.ts`.
 
 ```ts
-// app/api/cron/delete-user-session-cron.ts
-import { BaseKernelCron, type CronJobContext } from 'duneta/server/cron';
+// routes/delete-user-session-cron.ts
+import { BaseKernelCron, type CronJobContext } from 'duneta/http/cron';
 
 export class DeleteUserSessionCron extends BaseKernelCron {
   readonly name = 'delete-user-session';
@@ -42,8 +42,8 @@ export class DeleteUserSessionCron extends BaseKernelCron {
 ## Register in the kernel
 
 ```ts
-// app/api/cron/index.ts
-import { defineCronKernel } from 'duneta/server/cron';
+// routes/console.ts
+import { defineCronKernel } from 'duneta/http/cron';
 import { DeleteUserSessionCron } from './delete-user-session-cron';
 
 export const registerCron = defineCronKernel([
@@ -51,22 +51,17 @@ export const registerCron = defineCronKernel([
 ]);
 ```
 
-Mount in `defineServer`:
+Mount from `worker.ts` via `createDunetaWorker()` (auto loads `routes/console.ts`):
 
 ```ts
-const api = defineServer({
-  importConfig: () => import('./duneta.server.config'),
-  createAppRouter,
-  registerServices,
-  registerCron,
-  resolvePermissions,
-});
+import { createDunetaWorker } from 'duneta/worker';
+export default createDunetaWorker();
 ```
 
 ## Enable config
 
 ```ts
-// duneta.server.config.ts
+// config/server.ts
 export default defineServerConfig({
   cron: { enabled: true },
 });

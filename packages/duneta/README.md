@@ -2,7 +2,7 @@
 
 Full-stack React + Hono on Cloudflare Workers — dev, build, and deploy CLI.
 
-Install `duneta` to get the CLI plus bundled `duneta/client` and `duneta/server` import paths in one package.
+Install `duneta` to get the CLI plus the full `duneta/*` import surface (UI, router, config, Hono API toolkit, and middleware) in one package.
 
 ## Quick start
 
@@ -36,23 +36,16 @@ npm install duneta
 
 | Path | Use in |
 |------|--------|
-| `duneta/client/*` | React Router web shell (`app/`) |
-| `duneta/server/*` | Hono API (`app/api/`) |
+| `duneta/views/*` | React Router web shell (`app/`) |
+| `duneta/http` and `duneta/http/*` | Hono API (`routes/api.ts` + `app/http/controllers/`) |
+| `duneta/middleware/http` | Hono/API middleware |
+| `duneta/middleware/page` | React Router SSR page middleware |
 | `duneta/vite` | Vite config re-export |
 
 ```ts
-import { DunetaButton } from 'duneta/client/ui';
-import { defineServer } from 'duneta/server/runtime/worker';
+import { DunetaButton } from 'duneta/views/component';
+import { defineServer } from 'duneta/worker';
 ```
-
-## Standalone packages
-
-You can install client or server separately if you only need one side:
-
-- [`duneta-client`](https://www.npmjs.com/package/duneta-client) — browser kit only
-- [`duneta-server`](https://www.npmjs.com/package/duneta-server) — API utilities only
-
-Import paths stay `duneta/client` and `duneta/server` in both layouts.
 
 ## Requirements
 

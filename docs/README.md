@@ -1,6 +1,6 @@
 # Tài liệu Duneta
 
-Monorepo TypeScript: **Hono API** (`duneta/server`) + **React Router web** (`duneta/client`).
+Monorepo TypeScript: **Hono API** (`duneta/http`, `duneta/middleware/http`) + **React Router web** (`duneta/views`, `duneta/middleware/page`) — 1 package framework, 1 dogfood app.
 
 ## Mục lục
 
@@ -16,11 +16,12 @@ Monorepo TypeScript: **Hono API** (`duneta/server`) + **React Router web** (`dun
 - [Cấu hình](./configuration.md)
 - [Design system contract](../DESIGN.md)
 
-### API (`app/api`)
+### API (`routes/api.ts` + `app/http/controllers/`)
 
 - [Tổng quan API app](./api/overview.md)
 - [Sync convention](./api/sync.md)
 - [Runtime](./api/runtime.md)
+- [Middleware](./middleware.md)
 - [Routes & `createAppRouter`](./api/routes.md)
 - [Cron scheduled jobs](./api/cron.md)
 - [Services & DI](./api/services.md)
@@ -32,5 +33,5 @@ Monorepo TypeScript: **Hono API** (`duneta/server`) + **React Router web** (`dun
 
 ### Packages
 
-- [`duneta/server`](./packages/server.md)
-- [`duneta/client`](./packages/client.md)
+- [Server-side layers (`duneta/http`, `duneta/worker`)](./packages/server.md)
+- [Client-side layers (`duneta/*`)](./packages/client.md)

@@ -1,5 +1,5 @@
 {
-  "name": "duneta",
+  "name": "duneta-monorepo",
   "version": "0.1.2",
   "private": true,
   "packageManager": "pnpm@10.12.1",
@@ -7,25 +7,20 @@
     "node": ">=22.22.0"
   },
   "scripts": {
-    "prepare": "duneta prepare",
-    "build": "duneta build",
-    "dev": "duneta dev",
-    "deploy": "duneta deploy",
+    "build": "pnpm --filter duneta run build",
+    "typecheck": "pnpm -r --if-present run typecheck",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "typecheck": "node node_modules/typescript/bin/tsc -p tsconfig.json --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "version:check": "node scripts/version.mjs check",
     "version:sync": "node scripts/version.mjs sync",
-    "version:bump": "node scripts/version.mjs bump"
-  },
-  "dependencies": {
-    "duneta": "workspace:*"
+    "version:bump": "node scripts/version.mjs bump",
+    "dogfood": "pnpm --filter dogfood run dev",
+    "dogfood:build": "pnpm --filter dogfood run build",
+    "dogfood:deploy": "pnpm --filter dogfood run deploy"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.42.3",
-    "@cloudflare/workers-types": "^4.20250617.0",
     "@eslint/js": "^9.39.1",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
@@ -33,7 +28,6 @@
     "globals": "^16.5.0",
     "prettier": "^3.5.3",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.46.4",
-    "wrangler": "^4.105.0"
+    "typescript-eslint": "^8.46.4"
   }
 }

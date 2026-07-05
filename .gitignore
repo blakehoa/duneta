@@ -5,6 +5,4 @@ build
 dist
 .wrangler
 .env
-packages/duneta/client
-packages/duneta/server
 

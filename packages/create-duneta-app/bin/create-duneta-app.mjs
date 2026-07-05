@@ -71,7 +71,7 @@ console.log('  cd', targetArgLabel(targetDir));
 console.log('  npm install');
 console.log('  npm run dev');
 console.log('');
-console.log('Edit duneta.client.config.ts (web) and duneta.server.config.ts (API).');
+console.log('Edit config/client.ts (web) and config/server.ts (API).');
 console.log('Production secrets: wrangler secret put — see docs/configuration.md');
 
 function targetArgLabel(dir) {

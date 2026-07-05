@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 @import '@heroui/styles';
 
-@source "../../node_modules/duneta/client";
-@source "../../node_modules/duneta/client/starter/routers";
+@source "../../node_modules/duneta";
+@source "../../node_modules/duneta/starter/routers";
 @source "../pages";
 @source "../.router-runtime";

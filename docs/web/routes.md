@@ -3,9 +3,9 @@
 ## Router merge
 
 ```text
-packages/client/starter/routers/   ← defaults (layout, page, entry.server)
+packages/duneta/starter/routers/   ← defaults (layout, page, entry.server)
 app/pages/                         ← your pages (override on sync)
-         ↓ duneta sync
+         ↓ duneta dev / duneta build
 app/.router-runtime/               ← generated (do not edit)
     layout.tsx                     ← document shell
     root.tsx                       ← re-exports layout
@@ -23,10 +23,22 @@ Thêm `app/pages/<segment>/page.tsx` cho route mới.
 
 ## Theme
 
-`duneta.client.config.ts` → `theme.default` (áp dụng trong `DunetaThemeProvider`).
+`config/client.ts` → `theme.default` (áp dụng trong `DunetaThemeProvider`).
 
 CSS: `app/themes/globals.css`
 
 ## Gọi API
 
 Same-origin `/api` — xem [overview](./overview.md).
+
+## Page middleware
+
+Page middleware thuộc `routes/web.ts` và nên import từ `duneta/middleware/page`.
+
+```ts
+import type { DunetaPageRoutes } from 'duneta/middleware/page';
+```
+
+Nó bọc React Router SSR page rendering. Đây không phải Hono middleware và không nhận `c: Context`.
+
+Chỉ dùng `duneta/middleware/http` cho API route groups dưới `/api/*`.

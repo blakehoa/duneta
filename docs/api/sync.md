@@ -1,26 +1,13 @@
 # Sync convention
 
-Codegen tự chạy trong `pnpm build` / `pnpm deploy` khi chưa có `api/services.ts` hoặc `api/router.ts`.
+Codegen không còn tạo `services.ts/router.ts`; app dùng layout Laravel-style với `routes/api.ts` + `app/providers/app-service-provider.ts`.
 
 ## Manual (khuyến nghị)
 
 ```text
-app/api/
-  services.ts      → registerServices
-  router.ts        → createAppRouter
-  permissions.ts   → resolvePermissions
+routes/
+  api.ts                      → API route registry
+app/
+  providers/app-service-provider.ts → registerServices + resolvePermissions
+  http/controllers/*          → controllers + route groups
 ```
-
-`worker.ts` import trực tiếp các file trên.
-
-## Convention-only (sync tự sinh)
-
-Thêm file theo pattern — sync ghi `services.ts` / `router.ts` nếu chưa có:
-
-| File | Export |
-|------|--------|
-| `post-controller.ts` | `PostController` |
-| `post-repository.ts` | `PostRepository` |
-| `routers/posts.routes.ts` | `postsRoutes` |
-
-Override thủ công: giữ `services.ts` / `router.ts` — sync bỏ qua.

@@ -30,7 +30,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['app/**/*.{ts,tsx}', 'packages/client/**/*.{ts,tsx}'],
+    files: ['examples/dogfood/app/**/*.{ts,tsx}', 'packages/duneta/**/*.{ts,tsx}'],
     languageOptions: {
       globals: {
         ...globals.browser,

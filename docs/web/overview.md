@@ -15,11 +15,11 @@ Sau đó `pnpm build`.
 
 ## Config
 
-`duneta.client.config.ts` — `api.baseUrl`, `theme.default`.
+`config/client.ts` — `api.baseUrl`, `theme.default`.
 
 ## Gọi API
 
-Same-origin `/api` — `http` từ `duneta/client/http`.
+Same-origin `/api` — `http` từ `duneta/http`.
 
 ```bash
 pnpm dev   # web + API cùng :8787

@@ -1,0 +1,23 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "duneta",
+  "main": "worker.ts",
+  "compatibility_date": "2026-06-24",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "nodejs_compat_populate_process_env",
+  ],
+  "vars": {
+    "NODE_ENV": "development",
+  },
+  // Cron triggers (requires `cron.enabled: true` in config/server.ts):
+  // "triggers": { "crons": ["0 0 * * *"] },
+  "secrets": {
+    // "required": ["DATABASE_URL", "AUTH_SECRET", "CSRF_SECRET"]
+  },
+  // Dev secrets: `.env` at project root (Wrangler / Vite plugin — not bundled on deploy).
+  // Prod: wrangler secret put DATABASE_URL, AUTH_SECRET, CSRF_SECRET
+  //
+  // Web config → config/client.ts (Vite only)
+  // API config  → config/server.ts (Worker runtime only)
+}

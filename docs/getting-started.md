@@ -14,7 +14,7 @@ pnpm install && pnpm deploy
 wrangler login
 ```
 
-App mới chỉ có `GET /api/health` — bật thêm trong `duneta.server.config.ts` khi cần.
+App mới chỉ có `GET /api/health` — bật thêm trong `config/server.ts` khi cần.
 
 Production bindings (optional): copy `wrangler.production.jsonc.example` (Hyperdrive, R2).
 
@@ -30,11 +30,12 @@ Tạo `.env` khi config dùng `process.env.*` (DB, auth, …). App minimal khôn
 
 | Path | Việc |
 |------|------|
-| `duneta.client.config.ts` | Web (theme, api) |
-| `duneta.server.config.ts` | API (database, auth, …) |
+| `config/client.ts` | Web (theme, api) |
+| `config/server.ts` | API (database, auth, …) |
 | `wrangler.jsonc` | Worker dev |
 | `worker.ts` | Entry Worker |
-| `app/api/` | Routes, services API |
+| `routes/api.ts` | API route registry |
+| `app/http/controllers/` | API controllers and route groups |
 | `app/pages/` | Pages React Router |
 | `app/themes/` | CSS |
 
@@ -53,4 +54,4 @@ pnpm duneta make:middleware audit
 pnpm duneta make:cron delete-user-session
 ```
 
-`make:*` tạo file theo convention trong `app/`. Nếu app đang dùng `api/services.ts` hoặc `api/router.ts` thủ công, import/mount file mới ở đó. Nếu bỏ qua file thủ công, `duneta sync` trong dev/build sẽ tự sinh từ `controllers/`, `repositories/`, `routers/`.
+`make:*` tạo file theo convention trong `app/`. Sau khi tạo, mount thủ công: route group mới → thêm vào `routes/api.ts`; controller/repository mới → đăng ký trong `app/providers/app-service-provider.ts` (`registerServices`).
