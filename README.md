@@ -35,7 +35,7 @@ react-router.config.mts
 wrangler.jsonc         # Worker dev (deploy → app/build/server/wrangler.json)
 
 worker.ts              # entry
-routes/                # web/api/console route declarations
+routes/                # web.ts / api.ts / console.ts — ApiRoute.Config, WebRoute.Config
 app/                   # source only
 ├── providers/         # registerServices + resolvePermissions
 ├── http/              # backend modules

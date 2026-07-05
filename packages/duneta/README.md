@@ -2,7 +2,7 @@
 
 Full-stack React + Hono on Cloudflare Workers — dev, build, and deploy CLI.
 
-Install `duneta` to get the CLI plus the full `duneta/*` import surface (UI, router, config, Hono API toolkit, and middleware) in one package.
+Install `duneta` to get the CLI plus the full `duneta/*` import surface (UI, routes, config, Hono API toolkit, and middleware) in one package.
 
 ## Quick start
 
@@ -36,15 +36,19 @@ npm install duneta
 
 | Path | Use in |
 |------|--------|
+| `duneta/routes` | Route definitions — `ApiRoute.define`, `WebRoute.define` |
 | `duneta/views/*` | React Router web shell (`app/`) |
 | `duneta/http` and `duneta/http/*` | Hono API (`routes/api.ts` + `app/http/controllers/`) |
 | `duneta/middleware/http` | Hono/API middleware |
 | `duneta/middleware/page` | React Router SSR page middleware |
+| `duneta/worker` | Worker entry (`createDunetaWorker`) |
 | `duneta/vite` | Vite config re-export |
 
 ```ts
+import { ApiRoute, WebRoute } from 'duneta/routes';
+import { resolveController } from 'duneta/http';
 import { DunetaButton } from 'duneta/views/component';
-import { defineServer } from 'duneta/worker';
+import { createDunetaWorker } from 'duneta/worker';
 ```
 
 ## Requirements

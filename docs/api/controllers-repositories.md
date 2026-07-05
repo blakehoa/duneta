@@ -100,7 +100,23 @@ Schema Drizzle đặt trong `repositories/schemas/` hoặc `packages/duneta/repo
 3. Tạo `PostController extends BaseController`
 4. Đăng ký trong `app/providers/app-service-provider.ts`
 5. Thêm `ApiRoute.define` trong `app/http/controllers/*/routes.ts`
-6. Gắn group vào `routes/api.ts`
+6. Gắn export vào `routes/api.ts` (`api: [postRoutes]`)
+
+### Ví dụ route group
+
+```ts
+// app/http/controllers/Post/routes.ts
+import { ApiRoute } from 'duneta/routes';
+import { resolveController } from 'duneta/http';
+
+export const postRoutes = ApiRoute.define({
+  path: '/posts',
+  endpoints: [
+    { method: 'GET', handler: resolveController('PostController', 'index') },
+    { method: 'GET', path: '/:id', handler: resolveController('PostController', 'show') },
+  ],
+});
+```
 
 ## Auth trong controller
 

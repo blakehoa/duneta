@@ -48,6 +48,13 @@ Middleware được tách theo request target:
 | API | `duneta/middleware/http` | Hono route/controller requests dưới `/api/*` |
 | Page | `duneta/middleware/page` | React Router SSR page rendering |
 
+Route **definitions** (khai báo path, endpoints, layout/page mapping) nằm trong `duneta/routes` — không trộn vào `middleware/`:
+
+| Loại route | Khai báo ở | API |
+|------------|-----------|-----|
+| API (`/api/*`) | `routes/api.ts` + `app/http/controllers/*/routes.ts` | `ApiRoute.define`, `ApiRoute.Config` |
+| Web (`/*`) | `routes/web.ts` | `WebRoute.define`, `WebRoute.Config` |
+
 Không dùng root import `duneta/middleware`; app code phải chọn rõ `duneta/middleware/http` hoặc `duneta/middleware/page`.
 
 ## Boot API
@@ -57,7 +64,8 @@ Không dùng root import `duneta/middleware`; app code phải chọn rõ `duneta
 | Hook | File |
 |------|------|
 | `server config` | `config/server.ts` (lazy runtime import) |
-| `api routes` | `routes/api.ts` |
+| `api routes` | `routes/api.ts` (`ApiRoute.Config`) |
+| `web routes` | `routes/web.ts` (`WebRoute.Config`) |
 | `registerServices` | `app/providers/app-service-provider.ts` |
 | `resolvePermissions` | `app/providers/app-service-provider.ts` |
 

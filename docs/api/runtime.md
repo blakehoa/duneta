@@ -12,9 +12,9 @@ wrangler.jsonc  →  worker.ts  →  fetch(request, env)
 
 | Path | Handler |
 |------|---------|
-| `/api/*` | Hono API (`createDunetaWorker` + `routes/api.ts`) |
+| `/api/*` | Hono API (`createDunetaWorker` → `buildApiRouter` từ `routes/api.ts`) |
 | static | `createDunetaWorker` → ASSETS (auto) |
-| `/*` | React Router SSR |
+| `/*` (pages) | React Router SSR (`routes/web.ts` → sync → `app/.router-runtime/`) |
 
 ## Config load
 

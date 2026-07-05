@@ -9,7 +9,7 @@ Monorepo source nằm phẳng trong `packages/duneta/` — export path khớp tr
 
 | npm package | Import path | Dùng trong |
 |-------------|-------------|------------|
-| `duneta` | `duneta/*`, `duneta/http`, `duneta/middleware/http`, `duneta/middleware/page` | CLI + full-stack app |
+| `duneta` | `duneta/*`, `duneta/routes`, `duneta/http`, `duneta/middleware/http`, `duneta/middleware/page` | CLI + full-stack app |
 
 ## Tài liệu
 

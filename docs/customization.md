@@ -10,7 +10,7 @@ Tóm tắt **chỗ nào sửa** cho từng nhu cầu — không cần đụng `p
 | Thêm controller/repository | `app/http/controllers/`                  | [Sync](./api/sync.md)                |
 | Thêm API route             | `routes/api.ts` + `app/http/controllers/*/routes.ts` | [Sync](./api/sync.md)                |
 | Deploy Worker              | `wrangler.jsonc` + `worker.ts`          | [Deploy](../deployment.md)           |
-| Thêm web page              | `app/pages/`                            | [Web pages](../web/routes.md)        |
+| Thêm web page + middleware | `app/pages/` + `routes/web.ts` | [Web pages](../web/routes.md) |
 | Đổi theme                  | `config/client.ts`                      | [Web overview](../web/overview.md)   |
 
 ## Workflow: thêm feature API mới
@@ -76,6 +76,17 @@ export const postsRoutes = ApiRoute.define({
 });
 ```
 
+Mount trong `routes/api.ts`:
+
+```ts
+import type { ApiRoute } from 'duneta/routes';
+import { postsRoutes } from '../app/http/controllers/post';
+
+export default {
+  api: [postsRoutes],
+} satisfies ApiRoute.Config;
+```
+
 `pnpm build` lấy API từ `routes/api.ts` + `app/providers/app-service-provider.ts`.
 
 ### 5. Dev
@@ -111,6 +122,42 @@ Framework ship sẵn trong `duneta/routes` — user chọn mount trong `routes/a
 
 App mới chỉ mount `healthRoutes`. Thêm group = bật config + register service tương ứng.
 
+## Workflow: thêm web page với middleware
+
+### 1. Tạo page file
+
+```tsx
+// app/pages/admin/page.tsx
+export default function AdminPage() {
+  return <h1>Admin</h1>;
+}
+```
+
+### 2. Khai báo trong `routes/web.ts`
+
+```ts
+import { WebRoute } from 'duneta/routes';
+import type { DunetaPageMiddleware } from 'duneta/middleware/page';
+
+const adminGuard: DunetaPageMiddleware = async (context, next) => {
+  context.locals.section = 'admin';
+  return next();
+};
+
+export default {
+  pages: [
+    WebRoute.define({
+      path: '/admin',
+      layout: 'layout.tsx',
+      page: 'admin/page.tsx',
+      middleware: [adminGuard],
+    }),
+  ],
+} satisfies WebRoute.Config;
+```
+
+Restart `pnpm dev` để sync routers sau khi thêm route mới.
+
 ## Workflow: web page gọi API mới
 
 ```tsx
@@ -134,7 +181,7 @@ export default function PostsPage() {
 
 1. **`.env`** — secret values · **`config/server.ts`** — map `process.env.*` · **`config/client.ts`** — web
 2. **Một Worker** — `worker.ts` route web + API
-3. **Convention + sync** — thêm `*-controller.ts`, `*-repository.ts`, `*.routes.ts`
+3. **Convention + sync** — thêm `*-controller.ts`, `*-repository.ts`, `routes.ts` (`ApiRoute.define`)
 4. **Repository trước, Controller sau** — sync tự match theo base name
 5. **Arrow methods** trên controller cho `resolveController`
 

@@ -34,8 +34,9 @@ Tạo `.env` khi config dùng `process.env.*` (DB, auth, …). App minimal khôn
 | `config/server.ts` | API (database, auth, …) |
 | `wrangler.jsonc` | Worker dev |
 | `worker.ts` | Entry Worker |
-| `routes/api.ts` | API route registry |
-| `app/http/controllers/` | API controllers and route groups |
+| `routes/api.ts` | API route registry (`ApiRoute.Config`) |
+| `routes/web.ts` | Web route registry (`WebRoute.Config`) + page middleware |
+| `app/http/controllers/` | API controllers and `ApiRoute.define` route groups |
 | `app/pages/` | Pages React Router |
 | `app/themes/` | CSS |
 
@@ -54,4 +55,8 @@ pnpm duneta make:middleware audit
 pnpm duneta make:cron delete-user-session
 ```
 
-`make:*` tạo file theo convention trong `app/`. Sau khi tạo, mount thủ công: route group mới → thêm vào `routes/api.ts`; controller/repository mới → đăng ký trong `app/providers/app-service-provider.ts` (`registerServices`).
+`make:*` tạo file theo convention trong `app/`. Sau khi tạo, mount thủ công:
+
+- Route group mới (`make:route`) → thêm export vào `routes/api.ts`
+- Page mới (`make:page`) → thêm file trong `app/pages/` + `WebRoute.define` trong `routes/web.ts` nếu cần middleware
+- Controller/repository mới → đăng ký trong `app/providers/app-service-provider.ts` (`registerServices`)

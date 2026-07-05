@@ -1,6 +1,6 @@
 # Tài liệu Duneta
 
-Monorepo TypeScript: **Hono API** (`duneta/http`, `duneta/middleware/http`) + **React Router web** (`duneta/views`, `duneta/middleware/page`) — 1 package framework, 1 dogfood app.
+Monorepo TypeScript: **Hono API** (`duneta/routes`, `duneta/http`, `duneta/middleware/http`) + **React Router web** (`duneta/routes`, `duneta/views`, `duneta/middleware/page`) — 1 package framework, 1 dogfood app.
 
 ## Mục lục
 
@@ -27,7 +27,7 @@ Monorepo TypeScript: **Hono API** (`duneta/http`, `duneta/middleware/http`) + **
 - [Services & DI](./api/services.md)
 - [Controller → Repository](./api/controllers-repositories.md)
 
-### App (`app/`)
+### App (`routes/*` + `app/`)
 
 - [Web routes & theme](./web/routes.md)
 

@@ -3,9 +3,9 @@
 ```text
 your-domain.com/*
   createDunetaWorker (worker.ts)
-    /api/*  → Hono (`duneta/http`, `duneta/middleware/http`)
+    /api/*  → Hono (`duneta/routes` + `duneta/http`, middleware: `duneta/middleware/http`)
     static  → ASSETS (auto — app/build/client)
-    /*      → React Router SSR  (app/build/server)
+    /*      → React Router SSR (`routes/web.ts`, middleware: `duneta/middleware/page`)
 ```
 
 ## Commands
