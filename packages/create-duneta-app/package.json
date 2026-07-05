@@ -1,6 +1,6 @@
 {
   "name": "create-duneta-app",
-  "version": "0.1.2",
+  "version": "1.0.1",
   "description": "Scaffold a new Duneta full-stack Cloudflare Workers project.",
   "license": "MIT",
   "type": "module",
