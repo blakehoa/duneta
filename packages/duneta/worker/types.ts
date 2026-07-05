@@ -9,7 +9,7 @@ import {
   buildApiRouter,
   normalizeRoutes,
   type DunetaRoutesModule,
-} from './app-routes.js';
+} from '../routes/index.js';
 
 export type ModuleLoader<T = unknown> = () => Promise<T>;
 

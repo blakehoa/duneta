@@ -8,6 +8,7 @@ export {
   defaultApiRoutes,
   normalizeRoutes,
   type DunetaApiRoutes,
+  type DunetaWebRoutes,
   type DunetaRoutesModule,
 } from './app-routes.js';
 export {

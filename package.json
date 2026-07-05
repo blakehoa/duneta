@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "pnpm --filter duneta run build",
-    "typecheck": "pnpm -r --if-present run typecheck",
+    "typecheck": "pnpm --filter duneta run build && pnpm -r --if-present run typecheck",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

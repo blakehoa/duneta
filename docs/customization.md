@@ -63,11 +63,11 @@ export class PostController extends BaseController {
 
 ```ts
 // app/http/controllers/Post/routes.ts
-import { defineGroup } from 'duneta/http/router';
+import { ApiRoute } from 'duneta/routes';
 import { resolveController } from 'duneta/http';
 import { requireSession } from 'duneta/middleware/http';
 
-export const postsRoutes = defineGroup({
+export const postsRoutes = ApiRoute.define({
   path: '/posts',
   middleware: [requireSession()],
   endpoints: [
@@ -100,7 +100,7 @@ ctx.controllers.singleton('UserController', () => new MyUserController(...));
 
 ## Workflow: dùng route build sẵn
 
-Framework ship sẵn trong `duneta/http/router` — user chọn mount trong `routes/api.ts`:
+Framework ship sẵn trong `duneta/routes` — user chọn mount trong `routes/api.ts`:
 
 | Route group | Cần config | Cần register |
 |-------------|------------|--------------|

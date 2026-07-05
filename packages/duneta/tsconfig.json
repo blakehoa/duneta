@@ -23,6 +23,7 @@
     "middleware",
     "permission",
     "query",
+    "routes",
     "starter",
     "validators",
     "views",

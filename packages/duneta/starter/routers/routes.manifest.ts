@@ -1,3 +1,3 @@
-import { composePageRouter } from 'duneta/middleware/page';
+import { buildWebRouter } from 'duneta/routes';
 
-export const pageRouter = composePageRouter([]);
+export const pageRouter = buildWebRouter([]);

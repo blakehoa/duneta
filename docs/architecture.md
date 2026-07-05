@@ -5,7 +5,7 @@
 | Lớp | Ở đâu | Vai trò |
 |-----|-------|---------|
 | **Core** | `packages/duneta`, `duneta` CLI | Runtime, DI, config, middleware, optional modules. **Mặc định OFF** — bật trong `config/server.ts`. |
-| **Build sẵn** | `duneta/http/router`, `duneta/http`, `duneta/http/repositories`, `duneta/starter/routers` | Controller/route/UI reference — import và dùng, hoặc bỏ qua. |
+| **Build sẵn** | `duneta/routes`, `duneta/http`, `duneta/http/repositories`, `duneta/starter/routers` | Controller/route/UI reference — import và dùng, hoặc bỏ qua. |
 | **User app** | `config/client.ts`, `config/server.ts`, `routes/*`, `app/*` | User chọn bật feature nào, mount route nào, register service nào. |
 
 ```text

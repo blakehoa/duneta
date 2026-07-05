@@ -5,7 +5,7 @@
 ```text
 HTTP Request
     ↓
-Route (defineGroup + resolveController)
+Route (ApiRoute.define + resolveController)
     ↓
 Controller (BaseController)
     ↓
@@ -99,7 +99,7 @@ Schema Drizzle đặt trong `repositories/schemas/` hoặc `packages/duneta/repo
 2. Tạo `PostRepository extends BaseRepository`
 3. Tạo `PostController extends BaseController`
 4. Đăng ký trong `app/providers/app-service-provider.ts`
-5. Thêm `defineGroup` trong `app/http/controllers/*/routes.ts`
+5. Thêm `ApiRoute.define` trong `app/http/controllers/*/routes.ts`
 6. Gắn group vào `routes/api.ts`
 
 ## Auth trong controller

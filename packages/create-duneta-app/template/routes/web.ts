@@ -1,9 +1,13 @@
-import type { DunetaPageRoutes } from 'duneta/middleware/page';
+import { WebRoute } from 'duneta/routes';
 
 export default {
   pages: [
-    { path: '/', layout: 'layout.tsx', page: 'page.tsx' },
-    {
+    WebRoute.define({
+      path: '/',
+      layout: 'layout.tsx',
+      page: 'page.tsx',
+    }),
+    WebRoute.define({
       path: '/admin',
       layout: 'admin/layout.tsx',
       page: 'admin/page.tsx',
@@ -13,8 +17,8 @@ export default {
           return next();
         },
       ],
-    },
-    {
+    }),
+    WebRoute.define({
       path: '/post/:id',
       layout: 'post/layout.tsx',
       page: 'post/page.tsx',
@@ -24,6 +28,6 @@ export default {
           return next();
         },
       ],
-    },
+    }),
   ],
-} satisfies DunetaPageRoutes;
+} satisfies WebRoute.Config;

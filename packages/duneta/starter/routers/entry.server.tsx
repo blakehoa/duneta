@@ -7,11 +7,11 @@ import {
   finalizeSsrQueryResponse,
 } from 'duneta/query/ssr-server';
 import {
-  collectPageRouteMiddlewares,
   createPageRequestIdMiddleware as createRequestIdMiddleware,
   createPageSecurityHeadersMiddleware as createSecurityHeadersMiddleware,
   runPageMiddlewares,
 } from 'duneta/middleware/page';
+import { collectWebRouteMiddlewares } from 'duneta/routes';
 import { pageRouter } from './routes.manifest';
 
 export const streamTimeout = 5_000;
@@ -35,7 +35,7 @@ export default async function handleRequest(
     [
       createRequestIdMiddleware(),
       createSecurityHeadersMiddleware(),
-      ...collectPageRouteMiddlewares(pageRouter, {
+      ...collectWebRouteMiddlewares(pageRouter, {
         ...middlewareContext,
         url: new URL(request.url),
         locals: {},

@@ -20,20 +20,3 @@ export type DunetaPathMatcher =
   | string
   | RegExp
   | ((pathname: string, context: DunetaPageMiddlewareContext) => boolean);
-
-export type DunetaPageRoute<TLoadContext = unknown> = {
-  path: DunetaPathMatcher;
-  middleware?: DunetaPageMiddleware<TLoadContext> | DunetaPageMiddleware<TLoadContext>[];
-  layout?: string;
-  page?: string;
-  children?: DunetaPageRoute<TLoadContext>[];
-};
-
-export type DunetaPageRouter<TLoadContext = unknown> = {
-  routes: DunetaPageRoute<TLoadContext>[];
-};
-
-/** Page half of `app/routes.ts` (SSR / React Router). */
-export type DunetaPageRoutes<TLoadContext = unknown> = {
-  pages?: DunetaPageRoute<TLoadContext>[];
-};

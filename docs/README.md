@@ -22,7 +22,7 @@ Monorepo TypeScript: **Hono API** (`duneta/http`, `duneta/middleware/http`) + **
 - [Sync convention](./api/sync.md)
 - [Runtime](./api/runtime.md)
 - [Middleware](./middleware.md)
-- [Routes & `createAppRouter`](./api/routes.md)
+- [Routes & `buildApiRouter`](./api/routes.md)
 - [Cron scheduled jobs](./api/cron.md)
 - [Services & DI](./api/services.md)
 - [Controller → Repository](./api/controllers-repositories.md)

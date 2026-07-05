@@ -1,4 +1,5 @@
-import type { DunetaPageMiddleware, DunetaPageRoutes } from 'duneta/middleware/page';
+import { WebRoute } from 'duneta/routes';
+import type { DunetaPageMiddleware } from 'duneta/middleware/page';
 
 const appMiddleware: DunetaPageMiddleware = async (_context, next) => {
   const response = await next();
@@ -13,15 +14,23 @@ const appMiddleware: DunetaPageMiddleware = async (_context, next) => {
 
 export default {
   pages: [
-    {
+    WebRoute.define({
       path: '/',
       layout: 'layout.tsx',
       page: 'page.tsx',
       middleware: [appMiddleware],
-    },
-    { path: '/about', layout: 'layout.tsx', page: 'about/page.tsx' },
-    { path: '/datatable', layout: 'layout.tsx', page: 'datatable/page.tsx' },
-    {
+    }),
+    WebRoute.define({
+      path: '/about',
+      layout: 'layout.tsx',
+      page: 'about/page.tsx',
+    }),
+    WebRoute.define({
+      path: '/datatable',
+      layout: 'layout.tsx',
+      page: 'datatable/page.tsx',
+    }),
+    WebRoute.define({
       path: '/post/:id',
       layout: 'post/layout.tsx',
       page: 'post/page.tsx',
@@ -31,6 +40,6 @@ export default {
           return next();
         },
       ],
-    },
+    }),
   ],
-} satisfies DunetaPageRoutes;
+} satisfies WebRoute.Config;

@@ -38,6 +38,8 @@ const MODULE_EXPORTS = [
   // ── middleware (explicit request targets) ──────────────────────────────────
   ['middleware/page', 'middleware/page/index'],
   ['middleware/http', 'middleware/http/index'],
+  // ── route definitions (API + web) ──────────────────────────────────────────
+  ['routes', 'routes/index'],
   // ── server — auth / permission ─────────────────────────────────────────────
   ['auth', 'auth/index'],
   ['permission', 'permission/index'],
@@ -50,7 +52,6 @@ const MODULE_EXPORTS = [
   ['http/database', 'http/database/index'],
   ['http/logging', 'http/logging/index'],
   ['http/repositories', 'http/repositories/index'],
-  ['http/router', 'http/router/index'],
   // ── runtime ───────────────────────────────────────────────────────────────
   ['worker', 'worker/index'],
   ['starter/layouts', 'starter/layouts/index'],
@@ -110,13 +111,18 @@ const dunetaPkg = JSON.parse(fs.readFileSync(dunetaPkgPath, 'utf8'));
 dunetaPkg.exports = exportsMap;
 fs.writeFileSync(dunetaPkgPath, `${JSON.stringify(dunetaPkg, null, 2)}\n`);
 
-// Warn (don't fail) if dist/ is built and a manifest entry has gone stale.
+// Fail if dist/ is built and a manifest entry has gone stale (publish guard).
 const distDir = path.join(dunetaDir, 'dist');
 if (fs.existsSync(distDir)) {
+  const missing = [];
   for (const [exportPath, distEntry] of MODULE_EXPORTS) {
     const jsFile = path.join(distDir, `${distEntry}.js`);
     if (!fs.existsSync(jsFile)) {
-      console.warn(`[generate-exports] missing dist file for "./${exportPath}": ${path.relative(dunetaDir, jsFile)}`);
+      missing.push(`./${exportPath} -> ${path.relative(dunetaDir, jsFile)}`);
     }
+  }
+  if (missing.length > 0) {
+    console.error('[generate-exports] missing dist files:\n' + missing.join('\n'));
+    process.exit(1);
   }
 }

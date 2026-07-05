@@ -1,9 +1,9 @@
-import { defineGroup } from 'duneta/http/router';
+import { ApiRoute } from 'duneta/routes';
 import { resolveController } from 'duneta/http';
 
 const controllerKey = 'ImageMediaStorageController';
 
-export const imageMediaStorageRoutes = defineGroup({
+export const imageMediaStorageRoutes = ApiRoute.define({
   path: '/media',
   middleware: [],
   endpoints: [

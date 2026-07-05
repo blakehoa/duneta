@@ -33,10 +33,11 @@ Same-origin `/api` — xem [overview](./overview.md).
 
 ## Page middleware
 
-Page middleware thuộc `routes/web.ts` và nên import từ `duneta/middleware/page`.
+Page middleware thuộc `routes/web.ts`. Import route types từ `duneta/routes`, middleware runtime từ `duneta/middleware/page`:
 
 ```ts
-import type { DunetaPageRoutes } from 'duneta/middleware/page';
+import { WebRoute } from 'duneta/routes';
+import type { DunetaPageMiddleware } from 'duneta/middleware/page';
 ```
 
 Nó bọc React Router SSR page rendering. Đây không phải Hono middleware và không nhận `c: Context`.

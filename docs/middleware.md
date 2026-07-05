@@ -22,10 +22,11 @@ Không có public root import `duneta/middleware`. Nhìn import là biết middl
 Dùng API middleware trong `routes/api.ts` hoặc route group của Hono:
 
 ```ts
-import { defineGroup, resolveController } from 'duneta/http/router';
+import { ApiRoute } from 'duneta/routes';
+import { resolveController } from 'duneta/http';
 import { requireSession } from 'duneta/middleware/http';
 
-export const postsRoutes = defineGroup({
+export const postsRoutes = ApiRoute.define({
   path: '/posts',
   middleware: [requireSession()],
   endpoints: [
@@ -49,23 +50,24 @@ Dùng layer này cho các concern chỉ thuộc API:
 Dùng page middleware trong `routes/web.ts`:
 
 ```ts
-import type { DunetaPageRoutes } from 'duneta/middleware/page';
+import { WebRoute } from 'duneta/routes';
+import type { DunetaPageMiddleware } from 'duneta/middleware/page';
+
+const adminGuard: DunetaPageMiddleware = async (context, next) => {
+  context.locals.section = 'admin';
+  return next();
+};
 
 export default {
   pages: [
-    {
+    WebRoute.define({
       path: '/admin',
       layout: 'admin/layout.tsx',
       page: 'admin/page.tsx',
-      middleware: [
-        async (context, next) => {
-          context.locals.section = 'admin';
-          return next();
-        },
-      ],
-    },
+      middleware: [adminGuard],
+    }),
   ],
-} satisfies DunetaPageRoutes;
+} satisfies WebRoute.Config;
 ```
 
 Page middleware nhận Duneta page context, không nhận Hono context:
@@ -94,3 +96,5 @@ Dùng layer này cho các concern chỉ thuộc web/page:
 Nếu middleware trả JSON hoặc cần `c: Context<RequestContext>`, import từ `duneta/middleware/http`.
 
 Nếu middleware bọc page rendering hoặc chỉnh HTML response headers, import từ `duneta/middleware/page`.
+
+Route definitions (`ApiRoute`, `WebRoute`) import từ `duneta/routes` — không nằm trong `middleware/`.

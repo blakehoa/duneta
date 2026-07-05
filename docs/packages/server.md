@@ -13,10 +13,10 @@
 ```text
 packages/duneta/
 ├── worker/            # defineServer, boot, createDunetaWorker
+├── routes/            # ApiRoute, WebRoute, compose/build APIs
 ├── http/
 │   ├── create-app.ts  # createHttpApp, attachRequestServices
 │   ├── container/     # RegisterServices, DI containers
-│   ├── router/        # composeRouter, defineGroup, RouteGroup
 │   ├── controllers/   # built-in controllers
 │   └── repositories/  # built-in repositories
 ├── middleware/
@@ -25,7 +25,7 @@ packages/duneta/
 ├── permission/        # grants, policies, PermissionCheck
 ├── auth/              # Better Auth (login — không phải DI)
 ├── config/server/     # DunetaServerConfig
-└── scripts/           # sync-api.mjs (gọi từ bin/duneta.mjs)
+└── scripts/           # sync-routers.mjs (gọi từ bin/duneta.mjs)
 ```
 
 ## Exports chính
@@ -34,7 +34,7 @@ packages/duneta/
 |------|---------|
 | `duneta/worker` | `defineServer`, `ServerOptions` |
 | `duneta/http/container` | `RegisterServices`, `ServiceRegistryContext` |
-| `duneta/http/router` | `composeRouter`, `defineGroup`, `RouteGroup` |
+| `duneta/routes` | `ApiRoute`, `WebRoute`, `buildApiRouter`, `buildWebRouter` |
 | `duneta/http` | `resolveController`, `BaseController` |
 | `duneta/middleware/http` | `requireSession`, `RequestContext` |
 | `duneta/permission` | `UserPolicy`, `PermissionResolver` |

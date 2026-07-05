@@ -21,6 +21,7 @@
     "middleware",
     "permission",
     "query",
+    "routes",
     "starter",
     "validators",
     "views",
@@ -31,6 +32,7 @@
     "generate:ui": "node ./scripts/generate-ui-wrappers.mjs",
     "build": "rm -rf dist && node ../../node_modules/typescript/bin/tsc -p tsconfig.build.json && node ../../scripts/fix-esm-imports.mjs dist && cp starter/layouts/duneta-home.css dist/starter/layouts/duneta-home.css",
     "typecheck": "node ../../node_modules/typescript/bin/tsc --noEmit",
+    "verify:publish": "pnpm run build && node ./scripts/generate-exports.mjs && npm pack --dry-run",
     "prepublishOnly": "pnpm run build && node ./scripts/generate-exports.mjs",
     "postpublish": "node ./scripts/generate-exports.mjs"
   },
@@ -140,6 +142,10 @@
       "types": "./dist/middleware/http/index.d.ts",
       "import": "./dist/middleware/http/index.js"
     },
+    "./routes": {
+      "types": "./dist/routes/index.d.ts",
+      "import": "./dist/routes/index.js"
+    },
     "./auth": {
       "types": "./dist/auth/index.d.ts",
       "import": "./dist/auth/index.js"
@@ -179,10 +185,6 @@
     "./http/repositories": {
       "types": "./dist/http/repositories/index.d.ts",
       "import": "./dist/http/repositories/index.js"
-    },
-    "./http/router": {
-      "types": "./dist/http/router/index.d.ts",
-      "import": "./dist/http/router/index.js"
     },
     "./worker": {
       "types": "./dist/worker/index.d.ts",

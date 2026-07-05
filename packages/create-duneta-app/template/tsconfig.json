@@ -33,7 +33,7 @@
       "duneta/http/database": ["./node_modules/duneta/dist/http/database/index"],
       "duneta/http/logging": ["./node_modules/duneta/dist/http/logging/index"],
       "duneta/http/repositories": ["./node_modules/duneta/dist/http/repositories/index"],
-      "duneta/http/router": ["./node_modules/duneta/dist/http/router/index"],
+      "duneta/routes": ["./node_modules/duneta/dist/routes/index"],
       "duneta/validators": ["./node_modules/duneta/dist/validators/index"],
       "duneta/validators/*": ["./node_modules/duneta/dist/validators/*/index"],
       "duneta/starter/layouts": ["./node_modules/duneta/dist/starter/layouts/index"],

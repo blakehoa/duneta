@@ -143,9 +143,9 @@ function makeRoute(name) {
   writeNewFile(
     path.join(appRoot, 'http/controllers', base, 'routes.ts'),
     `import { resolveController } from 'duneta/http';
-import { defineGroup } from 'duneta/http/router';
+import { ApiRoute } from 'duneta/routes';
 
-export const ${exportName} = defineGroup({
+export const ${exportName} = ApiRoute.define({
   path: '${routePathFromName(name)}',
   endpoints: [
     { method: 'GET', handler: resolveController('${controller}', 'index') },
@@ -334,20 +334,9 @@ function extractBalanced(source, start) {
 
 function routeNamesFromRouter(routerSource) {
   const names = new Set();
-  const composeIndex = routerSource.indexOf('composeRouter');
-  if (composeIndex !== -1) {
-    const arrayStart = routerSource.indexOf('[', composeIndex);
-    if (arrayStart !== -1) {
-      const body = extractBalanced(routerSource, arrayStart);
-      for (const match of body.matchAll(/\b([a-zA-Z_$][\w$]*)(?:\s*\(\s*\))?/g)) {
-        const name = match[1];
-        if (!['composeRouter'].includes(name)) names.add(name);
-      }
-    }
-  }
-  // `routes/api.ts` api(): `return [imageMediaStorageRoutes]`
+  // `routes/api.ts` api: [imageMediaStorageRoutes]
   for (const match of routerSource.matchAll(/\b([a-zA-Z_$][\w$]*Routes)\b/g)) {
-    if (match[1] === 'DunetaPageRoutes' || match[1] === 'DunetaApiRoutes') continue;
+    if (match[1] === 'WebRoute' || match[1] === 'ApiRoute') continue;
     names.add(match[1]);
   }
   return names;
@@ -369,24 +358,24 @@ function parseRouteGroups(file) {
   const source = readIfExists(file);
   const groups = [];
 
-  for (const match of source.matchAll(/defineGroup\s*\(/g)) {
-    const objectStart = source.indexOf('{', match.index);
-    if (objectStart === -1) continue;
-    const body = extractBalanced(source, objectStart);
-    const basePath = body.match(/\bpath\s*:\s*['"`]([^'"`]+)['"`]/)?.[1];
-    if (!basePath) continue;
+  for (const match of source.matchAll(/ApiRoute\.define\s*\(/g)) {
+      const objectStart = source.indexOf('{', match.index);
+      if (objectStart === -1) continue;
+      const body = extractBalanced(source, objectStart);
+      const basePath = body.match(/\bpath\s*:\s*['"`]([^'"`]+)['"`]/)?.[1];
+      if (!basePath) continue;
 
-    const endpointsIndex = body.indexOf('endpoints');
-    const arrayStart = endpointsIndex === -1 ? -1 : body.indexOf('[', endpointsIndex);
-    const endpointsBody = arrayStart === -1 ? '' : extractBalanced(body, arrayStart);
-    const endpoints = [];
-    for (const endpointMatch of endpointsBody.matchAll(/\{[^{}]*\bmethod\s*:\s*['"`]([A-Z]+)['"`][^{}]*\}/g)) {
-      const endpoint = endpointMatch[0];
-      const method = endpointMatch[1];
-      const leafPath = endpoint.match(/\bpath\s*:\s*['"`]([^'"`]+)['"`]/)?.[1] ?? '/';
-      endpoints.push({ method, path: joinRoutePath(basePath, leafPath) });
-    }
-    groups.push({ basePath, endpoints });
+      const endpointsIndex = body.indexOf('endpoints');
+      const arrayStart = endpointsIndex === -1 ? -1 : body.indexOf('[', endpointsIndex);
+      const endpointsBody = arrayStart === -1 ? '' : extractBalanced(body, arrayStart);
+      const endpoints = [];
+      for (const endpointMatch of endpointsBody.matchAll(/\{[^{}]*\bmethod\s*:\s*['"`]([A-Z]+)['"`][^{}]*\}/g)) {
+        const endpoint = endpointMatch[0];
+        const method = endpointMatch[1];
+        const leafPath = endpoint.match(/\bpath\s*:\s*['"`]([^'"`]+)['"`]/)?.[1] ?? '/';
+        endpoints.push({ method, path: joinRoutePath(basePath, leafPath) });
+      }
+      groups.push({ basePath, endpoints });
   }
 
   return groups;
@@ -395,14 +384,14 @@ function parseRouteGroups(file) {
 function frameworkRouteGroups(routerSource) {
   const groups = [];
   if (/\bhealthRoutes\b/.test(routerSource)) {
-    groups.push({ source: 'duneta/http/router', endpoints: [{ method: 'GET', path: '/health' }] });
+    groups.push({ source: 'duneta/routes', endpoints: [{ method: 'GET', path: '/health' }] });
   }
   if (/\bmeRoutes\b/.test(routerSource)) {
-    groups.push({ source: 'duneta/http/router', endpoints: [{ method: 'GET', path: '/me' }] });
+    groups.push({ source: 'duneta/routes', endpoints: [{ method: 'GET', path: '/me' }] });
   }
   if (/\b(createUsersRoutes|usersRoutes)\b/.test(routerSource)) {
     groups.push({
-      source: 'duneta/http/router',
+      source: 'duneta/routes',
       endpoints: [
         { method: 'GET', path: '/users' },
         { method: 'GET', path: '/users/:id' },

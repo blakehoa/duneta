@@ -1,5 +1,5 @@
-import type { DunetaApiRoutes } from 'duneta/worker';
+import type { ApiRoute } from 'duneta/routes';
 
 export default {
   api: [],
-} satisfies DunetaApiRoutes;
+} satisfies ApiRoute.Config;
