@@ -8,13 +8,14 @@
     "node": ">=22.22.0"
   },
   "scripts": {
+    "prepare": "duneta prepare",
     "dev": "duneta dev",
     "build": "duneta build",
     "deploy": "duneta deploy",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "duneta": "^0.1.2",
+    "duneta": "^1.0.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },

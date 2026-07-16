@@ -16,7 +16,10 @@ function copyDir(src, dest) {
   fs.mkdirSync(dest, { recursive: true });
   for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
     const from = path.join(src, entry.name);
-    const to = path.join(dest, entry.name);
+    // npm pack strips leading-dot files (.npmrc, .gitignore); template stores them undotted.
+    const destName =
+      entry.name === 'npmrc' ? '.npmrc' : entry.name === 'gitignore' ? '.gitignore' : entry.name;
+    const to = path.join(dest, destName);
     if (entry.isDirectory()) {
       copyDir(from, to);
       continue;

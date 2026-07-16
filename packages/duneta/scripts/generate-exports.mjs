@@ -62,10 +62,10 @@ const WILDCARD_EXPORTS = [
   ['views/component/*', 'views/component/*/index'],
 ];
 
-/** Static assets served straight from source, not from dist/. */
+/** Static assets copied into dist/ at build time. */
 const ASSET_EXPORTS = [
-  ['starter/layouts/duneta-home.css', 'starter/layouts/duneta-home.css'],
-  ['views/theme/globals.css', 'views/theme/globals.css'],
+  ['starter/layouts/duneta-home.css', 'dist/starter/layouts/duneta-home.css'],
+  ['views/theme/globals.css', 'dist/views/theme/globals.css'],
 ];
 
 /** .mjs scripts consumed directly by the CLI, not compiled. */
@@ -75,16 +75,21 @@ const SCRIPT_EXPORTS = [
 ];
 
 function moduleEntry(distEntry) {
+  const js = `./dist/${distEntry}.js`;
   return {
     types: `./dist/${distEntry}.d.ts`,
-    import: `./dist/${distEntry}.js`,
+    import: js,
+    // `default` so tsx / Node resolvers that omit the `import` condition still resolve.
+    default: js,
   };
 }
 
 function wildcardEntry(distPattern) {
+  const js = `./dist/${distPattern}.js`;
   return {
     types: `./dist/${distPattern}.d.ts`,
-    import: `./dist/${distPattern}.js`,
+    import: js,
+    default: js,
   };
 }
 

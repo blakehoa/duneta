@@ -1,0 +1,4 @@
+# Duneta expects a hoisted node_modules layout (wrangler / vite / tsx resolution).
+# Required for pnpm; harmless for npm and yarn.
+node-linker=hoisted
+public-hoist-pattern[]=*

@@ -1,6 +1,6 @@
 {
   "name": "duneta",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Full-stack React + Hono on Cloudflare Workers — dev, build, and deploy CLI.",
   "license": "MIT",
   "type": "module",
@@ -11,26 +11,12 @@
     "bin",
     "vite.mjs",
     "scripts",
-    "dist",
-    "auth",
-    "config",
-    "core",
-    "helpers",
-    "http",
-    "i18n",
-    "middleware",
-    "permission",
-    "query",
-    "routes",
-    "starter",
-    "validators",
-    "views",
-    "worker"
+    "dist"
   ],
   "scripts": {
     "generate:exports": "node ./scripts/generate-exports.mjs",
     "generate:ui": "node ./scripts/generate-ui-wrappers.mjs",
-    "build": "rm -rf dist && node ../../node_modules/typescript/bin/tsc -p tsconfig.build.json && node ../../scripts/fix-esm-imports.mjs dist && cp starter/layouts/duneta-home.css dist/starter/layouts/duneta-home.css",
+    "build": "rm -rf dist && node ../../node_modules/typescript/bin/tsc -p tsconfig.build.json && node ../../scripts/fix-esm-imports.mjs dist && mkdir -p dist/starter/layouts dist/views/theme && cp starter/layouts/duneta-home.css dist/starter/layouts/duneta-home.css && cp views/theme/globals.css dist/views/theme/globals.css",
     "typecheck": "node ../../node_modules/typescript/bin/tsc --noEmit",
     "verify:publish": "pnpm run build && node ./scripts/generate-exports.mjs && npm pack --dry-run",
     "prepublishOnly": "pnpm run build && node ./scripts/generate-exports.mjs",
@@ -44,162 +30,201 @@
     "./vite": "./vite.mjs",
     "./core": {
       "types": "./dist/core/index.d.ts",
-      "import": "./dist/core/index.js"
+      "import": "./dist/core/index.js",
+      "default": "./dist/core/index.js"
     },
     "./config/client": {
       "types": "./dist/config/client/index.d.ts",
-      "import": "./dist/config/client/index.js"
+      "import": "./dist/config/client/index.js",
+      "default": "./dist/config/client/index.js"
     },
     "./config/client/react-router": {
       "types": "./dist/config/client/react-router.d.ts",
-      "import": "./dist/config/client/react-router.js"
+      "import": "./dist/config/client/react-router.js",
+      "default": "./dist/config/client/react-router.js"
     },
     "./config/client/load": {
       "types": "./dist/config/client/load.d.ts",
-      "import": "./dist/config/client/load.js"
+      "import": "./dist/config/client/load.js",
+      "default": "./dist/config/client/load.js"
     },
     "./config/client/bootstrap": {
       "types": "./dist/config/client/bootstrap.d.ts",
-      "import": "./dist/config/client/bootstrap.js"
+      "import": "./dist/config/client/bootstrap.js",
+      "default": "./dist/config/client/bootstrap.js"
     },
     "./config/server": {
       "types": "./dist/config/server/index.d.ts",
-      "import": "./dist/config/server/index.js"
+      "import": "./dist/config/server/index.js",
+      "default": "./dist/config/server/index.js"
     },
     "./helpers": {
       "types": "./dist/helpers/index.d.ts",
-      "import": "./dist/helpers/index.js"
+      "import": "./dist/helpers/index.js",
+      "default": "./dist/helpers/index.js"
     },
     "./i18n": {
       "types": "./dist/i18n/index.d.ts",
-      "import": "./dist/i18n/index.js"
+      "import": "./dist/i18n/index.js",
+      "default": "./dist/i18n/index.js"
     },
     "./query": {
       "types": "./dist/query/index.d.ts",
-      "import": "./dist/query/index.js"
+      "import": "./dist/query/index.js",
+      "default": "./dist/query/index.js"
     },
     "./query/ssr-server": {
       "types": "./dist/query/ssr-server.d.ts",
-      "import": "./dist/query/ssr-server.js"
+      "import": "./dist/query/ssr-server.js",
+      "default": "./dist/query/ssr-server.js"
     },
     "./validators": {
       "types": "./dist/validators/index.d.ts",
-      "import": "./dist/validators/index.js"
+      "import": "./dist/validators/index.js",
+      "default": "./dist/validators/index.js"
     },
     "./validators/string": {
       "types": "./dist/validators/string/index.d.ts",
-      "import": "./dist/validators/string/index.js"
+      "import": "./dist/validators/string/index.js",
+      "default": "./dist/validators/string/index.js"
     },
     "./validators/number": {
       "types": "./dist/validators/number/index.d.ts",
-      "import": "./dist/validators/number/index.js"
+      "import": "./dist/validators/number/index.js",
+      "default": "./dist/validators/number/index.js"
     },
     "./validators/auth": {
       "types": "./dist/validators/auth/index.d.ts",
-      "import": "./dist/validators/auth/index.js"
+      "import": "./dist/validators/auth/index.js",
+      "default": "./dist/validators/auth/index.js"
     },
     "./validators/scalar": {
       "types": "./dist/validators/scalar/index.d.ts",
-      "import": "./dist/validators/scalar/index.js"
+      "import": "./dist/validators/scalar/index.js",
+      "default": "./dist/validators/scalar/index.js"
     },
     "./validators/types": {
       "types": "./dist/validators/types/index.d.ts",
-      "import": "./dist/validators/types/index.js"
+      "import": "./dist/validators/types/index.js",
+      "default": "./dist/validators/types/index.js"
     },
     "./views/component": {
       "types": "./dist/views/component/index.d.ts",
-      "import": "./dist/views/component/index.js"
+      "import": "./dist/views/component/index.js",
+      "default": "./dist/views/component/index.js"
     },
     "./views/feedback": {
       "types": "./dist/views/feedback/index.d.ts",
-      "import": "./dist/views/feedback/index.js"
+      "import": "./dist/views/feedback/index.js",
+      "default": "./dist/views/feedback/index.js"
     },
     "./views/form": {
       "types": "./dist/views/form/index.d.ts",
-      "import": "./dist/views/form/index.js"
+      "import": "./dist/views/form/index.js",
+      "default": "./dist/views/form/index.js"
     },
     "./views/image": {
       "types": "./dist/views/image/index.d.ts",
-      "import": "./dist/views/image/index.js"
+      "import": "./dist/views/image/index.js",
+      "default": "./dist/views/image/index.js"
     },
     "./views/providers": {
       "types": "./dist/views/providers/index.d.ts",
-      "import": "./dist/views/providers/index.js"
+      "import": "./dist/views/providers/index.js",
+      "default": "./dist/views/providers/index.js"
     },
     "./views/router": {
       "types": "./dist/views/router/index.d.ts",
-      "import": "./dist/views/router/index.js"
+      "import": "./dist/views/router/index.js",
+      "default": "./dist/views/router/index.js"
     },
     "./views/script": {
       "types": "./dist/views/script/index.d.ts",
-      "import": "./dist/views/script/index.js"
+      "import": "./dist/views/script/index.js",
+      "default": "./dist/views/script/index.js"
     },
     "./middleware/page": {
       "types": "./dist/middleware/page/index.d.ts",
-      "import": "./dist/middleware/page/index.js"
+      "import": "./dist/middleware/page/index.js",
+      "default": "./dist/middleware/page/index.js"
     },
     "./middleware/http": {
       "types": "./dist/middleware/http/index.d.ts",
-      "import": "./dist/middleware/http/index.js"
+      "import": "./dist/middleware/http/index.js",
+      "default": "./dist/middleware/http/index.js"
     },
     "./routes": {
       "types": "./dist/routes/index.d.ts",
-      "import": "./dist/routes/index.js"
+      "import": "./dist/routes/index.js",
+      "default": "./dist/routes/index.js"
     },
     "./auth": {
       "types": "./dist/auth/index.d.ts",
-      "import": "./dist/auth/index.js"
+      "import": "./dist/auth/index.js",
+      "default": "./dist/auth/index.js"
     },
     "./permission": {
       "types": "./dist/permission/index.d.ts",
-      "import": "./dist/permission/index.js"
+      "import": "./dist/permission/index.js",
+      "default": "./dist/permission/index.js"
     },
     "./http": {
       "types": "./dist/http/index.d.ts",
-      "import": "./dist/http/index.js"
+      "import": "./dist/http/index.js",
+      "default": "./dist/http/index.js"
     },
     "./http/client": {
       "types": "./dist/http/client/index.d.ts",
-      "import": "./dist/http/client/index.js"
+      "import": "./dist/http/client/index.js",
+      "default": "./dist/http/client/index.js"
     },
     "./http/cache": {
       "types": "./dist/http/cache/index.d.ts",
-      "import": "./dist/http/cache/index.js"
+      "import": "./dist/http/cache/index.js",
+      "default": "./dist/http/cache/index.js"
     },
     "./http/container": {
       "types": "./dist/http/container/index.d.ts",
-      "import": "./dist/http/container/index.js"
+      "import": "./dist/http/container/index.js",
+      "default": "./dist/http/container/index.js"
     },
     "./http/cron": {
       "types": "./dist/http/cron/index.d.ts",
-      "import": "./dist/http/cron/index.js"
+      "import": "./dist/http/cron/index.js",
+      "default": "./dist/http/cron/index.js"
     },
     "./http/database": {
       "types": "./dist/http/database/index.d.ts",
-      "import": "./dist/http/database/index.js"
+      "import": "./dist/http/database/index.js",
+      "default": "./dist/http/database/index.js"
     },
     "./http/logging": {
       "types": "./dist/http/logging/index.d.ts",
-      "import": "./dist/http/logging/index.js"
+      "import": "./dist/http/logging/index.js",
+      "default": "./dist/http/logging/index.js"
     },
     "./http/repositories": {
       "types": "./dist/http/repositories/index.d.ts",
-      "import": "./dist/http/repositories/index.js"
+      "import": "./dist/http/repositories/index.js",
+      "default": "./dist/http/repositories/index.js"
     },
     "./worker": {
       "types": "./dist/worker/index.d.ts",
-      "import": "./dist/worker/index.js"
+      "import": "./dist/worker/index.js",
+      "default": "./dist/worker/index.js"
     },
     "./starter/layouts": {
       "types": "./dist/starter/layouts/index.d.ts",
-      "import": "./dist/starter/layouts/index.js"
+      "import": "./dist/starter/layouts/index.js",
+      "default": "./dist/starter/layouts/index.js"
     },
     "./views/component/*": {
       "types": "./dist/views/component/*/index.d.ts",
-      "import": "./dist/views/component/*/index.js"
+      "import": "./dist/views/component/*/index.js",
+      "default": "./dist/views/component/*/index.js"
     },
-    "./starter/layouts/duneta-home.css": "./starter/layouts/duneta-home.css",
-    "./views/theme/globals.css": "./views/theme/globals.css",
+    "./starter/layouts/duneta-home.css": "./dist/starter/layouts/duneta-home.css",
+    "./views/theme/globals.css": "./dist/views/theme/globals.css",
     "./scripts/sync-routers": "./scripts/sync-routers.mjs",
     "./scripts/load-config": "./scripts/load-config.mjs"
   },

@@ -30,16 +30,18 @@ npx create-duneta-app my-app --force
 - `duneta` CLI for dev, build, and deploy
 - `config/client.ts` and `config/server.ts`
 - Wrangler config for Cloudflare Workers
+- `.npmrc` with pnpm hoist settings (see below)
 
 ```json
 {
   "scripts": {
+    "prepare": "duneta prepare",
     "dev": "duneta dev",
     "build": "duneta build",
     "deploy": "duneta deploy"
   },
   "dependencies": {
-    "duneta": "^0.1.2",
+    "duneta": "^1.0.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   }
@@ -47,6 +49,17 @@ npx create-duneta-app my-app --force
 ```
 
 Dev server: `http://localhost:8787` (HMR).
+
+## pnpm
+
+The scaffold includes an `.npmrc` that forces a hoisted `node_modules` layout:
+
+```
+node-linker=hoisted
+public-hoist-pattern[]=*
+```
+
+Duneta (and tools it shells to — Wrangler, Vite, tsx) expect flat resolution. Keep this file if you use pnpm; it is harmless for npm and yarn.
 
 ## Requirements
 

@@ -276,12 +276,13 @@ async function loadSyncRouters() {
 
 function loadWebConfig() {
   const script = path.join(dunetaRoot, 'scripts/load-config.mjs');
-  const tsx = bin('tsx', 'dist/cli.mjs');
-  const r = spawnSync(process.execPath, [tsx, script, projectRoot], {
+  // Prefer the ESM register hook over tsx's CLI (avoids CJS/CLI path coupling).
+  const tsxEsm = pathToFileURL(require.resolve('tsx/esm')).href;
+  const r = spawnSync(process.execPath, ['--import', tsxEsm, script, projectRoot], {
     encoding: 'utf8',
     cwd: projectRoot,
   });
-  if (r.status !== 0) throw new Error(r.stderr || 'Failed to load config/client.ts');
+  if (r.status !== 0) throw new Error(r.stderr || r.stdout || 'Failed to load config/client.ts');
   return JSON.parse(r.stdout);
 }
 
@@ -461,9 +462,12 @@ const [command = 'dev', ...rest] = process.argv.slice(2);
 
 try {
   switch (command) {
-    case 'prepare':
+    case 'prepare': {
       buildPackagesIfNeeded();
+      const syncRouters = await loadSyncRouters();
+      syncRouters(projectRoot, appRoot, dunetaRoot, loadWebConfig());
       break;
+    }
     case 'dev': {
       buildPackagesIfNeeded();
       const syncRouters = await loadSyncRouters();
