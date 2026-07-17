@@ -1,31 +1,22 @@
-import { defineServerConfig, defineConnections, postgres, RECOMMENDED_RATE_LIMIT_RULES } from 'duneta/config/server';
+import { defineServerConfig } from 'duneta/config/server';
 
 export default defineServerConfig({
   database: {
-    enabled: true,
-    default: 'primary',
-    connections: defineConnections({
-      primary: postgres('HYPERDRIVE'),
-    }),
+    enabled: false,
   },
   auth: {
-    enabled: true,
-    baseUrl: process.env.AUTH_BASE_URL ?? 'http://localhost:8787',
-    secret: process.env.AUTH_SECRET ?? '',
+    enabled: false,
   },
   security: {
     rateLimit: {
-      enabled: true,
-      rules: RECOMMENDED_RATE_LIMIT_RULES,
+      enabled: false,
     },
     csrf: {
-      enabled: true,
-      secret: process.env.CSRF_SECRET ?? '',
+      enabled: false,
     },
   },
   logging: {
-    enabled: true,
-    format: 'json',
+    enabled: false,
   },
   storage: { enabled: false },
 });

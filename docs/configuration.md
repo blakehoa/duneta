@@ -73,7 +73,7 @@ When `database.enabled`, every connection **must** use a Hyperdrive binding ([su
 
 Verify sau build: `grep -r postgresql:// app/build/server/` → rỗng.
 
-Bindings (Hyperdrive, R2, …) — `wrangler.jsonc` / `wrangler.production.jsonc.example`. Static assets (`ASSETS`) do `pnpm build` + `createDunetaWorker` — không cấu hình tay.
+Bindings (Hyperdrive, R2, …) — `wrangler.jsonc` (dev) / `wrangler.production.jsonc` (build+deploy). Static assets (`ASSETS`) do `pnpm build` + `createDunetaWorker` — không cấu hình tay.
 
 ## Client config (web)
 
@@ -116,6 +116,6 @@ Cấu hình trong `config/server.ts`. Chi tiết storage: [storage](./api/storag
 
 | File | Purpose |
 |------|---------|
-| `wrangler.jsonc` | Dev + `secrets.required` |
-| `wrangler.production.jsonc.example` | Hyperdrive, R2 (optional) |
-| `app/build/server/wrangler.json` | Generated deploy |
+| `wrangler.jsonc` | Local `duneta dev` |
+| `wrangler.production.jsonc` | `duneta build` / `duneta deploy` |
+| `app/build/server/wrangler.json` | Generated deploy artifact |

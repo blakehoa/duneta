@@ -16,7 +16,7 @@ wrangler login
 
 App mới chỉ có `GET /api/health` — bật thêm trong `config/server.ts` khi cần.
 
-Production bindings (optional): copy `wrangler.production.jsonc.example` (Hyperdrive, R2).
+Production: điền Hyperdrive `id` + `AUTH_BASE_URL` trong `wrangler.production.jsonc`, rồi `wrangler secret put AUTH_SECRET` / `CSRF_SECRET`.
 
 ## Dev local
 

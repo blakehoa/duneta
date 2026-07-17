@@ -17,7 +17,7 @@ pnpm deploy
 Lần đầu: đăng nhập Cloudflare (`wrangler login` hoặc `CLOUDFLARE_API_TOKEN`).  
 App mới chỉ health check — DB/auth opt-in trong `config/server.ts` khi cần.
 
-Production bindings: xem `wrangler.production.jsonc.example` (Hyperdrive, R2).
+Production: `wrangler.production.jsonc` (Hyperdrive id + `AUTH_BASE_URL`) + `wrangler secret put AUTH_SECRET` / `CSRF_SECRET`.
 
 ## Dev local
 

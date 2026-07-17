@@ -455,7 +455,52 @@ async function buildWeb() {
 
 async function buildAll() {
   buildPackagesIfNeeded();
+  // Production Worker config: wrangler.production.jsonc (picked up by createDunetaViteConfig).
+  process.env.NODE_ENV = 'production';
+  const prodWrangler = path.join(projectRoot, 'wrangler.production.jsonc');
+  if (!existsSync(prodWrangler)) {
+    console.warn(
+      '[duneta] no wrangler.production.jsonc — build uses wrangler.jsonc. Add wrangler.production.jsonc before deploy.',
+    );
+  }
   await buildWeb();
+}
+
+function assertDeployableWorkerConfig() {
+  const generated = path.join(appRoot, 'build/server/wrangler.json');
+  if (!existsSync(generated)) {
+    throw new Error(`[duneta] missing ${path.relative(projectRoot, generated)} — run build first`);
+  }
+  const raw = fs.readFileSync(generated, 'utf8');
+  const config = JSON.parse(raw);
+  const hyperdrive = Array.isArray(config.hyperdrive) ? config.hyperdrive : [];
+
+  if (raw.includes('localConnectionString')) {
+    throw new Error(
+      '[duneta] deploy blocked: generated wrangler.json still has localConnectionString. ' +
+        'Use wrangler.production.jsonc (no localConnectionString) for production builds.',
+    );
+  }
+
+  for (const entry of hyperdrive) {
+    const id = typeof entry?.id === 'string' ? entry.id : '';
+    if (
+      !id ||
+      id.includes('<') ||
+      id === '00000000-0000-0000-0000-000000000000'
+    ) {
+      throw new Error(
+        `[duneta] deploy blocked: Hyperdrive binding "${entry?.binding ?? '?'}" needs a real id in wrangler.production.jsonc`,
+      );
+    }
+  }
+
+  if (config.vars?.NODE_ENV && config.vars.NODE_ENV !== 'production') {
+    throw new Error(
+      `[duneta] deploy blocked: vars.NODE_ENV is "${config.vars.NODE_ENV}" (expected production). ` +
+        'Ensure wrangler.production.jsonc exists and sets NODE_ENV=production.',
+    );
+  }
 }
 
 const [command = 'dev', ...rest] = process.argv.slice(2);
@@ -478,6 +523,7 @@ try {
     }
     case 'deploy':
       await buildAll();
+      assertDeployableWorkerConfig();
       run(
         process.execPath,
         [

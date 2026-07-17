@@ -49,6 +49,8 @@ export function createHttpApp({
 
   if (isCsrfEnabled(config)) {
     app.use('*', createCsrfMiddleware(config));
+  } else if (config.security?.csrf?.enabled === true) {
+    throw new Error('[duneta] security.csrf.enabled requires CSRF_SECRET (wrangler secret put CSRF_SECRET)');
   }
 
   app.onError(createErrorHandler(config));

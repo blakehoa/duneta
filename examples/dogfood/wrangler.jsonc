@@ -5,29 +5,18 @@
   "compatibility_date": "2026-06-24",
   "compatibility_flags": [
     "nodejs_compat",
-    "nodejs_compat_populate_process_env",
+    "nodejs_compat_populate_process_env"
   ],
   "vars": {
     "NODE_ENV": "development",
-  },
-  // Cron triggers (requires `cron.enabled: true` in config/server.ts):
-  // "triggers": { "crons": ["0 0 * * *"] },
-  "secrets": {
-    // "required": ["AUTH_SECRET", "CSRF_SECRET"]
-  },
-  // Postgres via Hyperdrive (required when database.enabled).
-  // https://developers.cloudflare.com/hyperdrive/reference/supported-databases-and-features/
-  // Local: set localConnectionString to your Postgres URL (or use a real Hyperdrive id).
-  "hyperdrive": [
-    {
-      "binding": "HYPERDRIVE",
-      "id": "00000000-0000-0000-0000-000000000000",
-      "localConnectionString": "postgres://postgres:postgres@127.0.0.1:5432/duneta"
-    }
-  ],
-  // Dev secrets: `.env` at project root (Wrangler / Vite plugin — not bundled on deploy).
-  // Prod: wrangler secret put AUTH_SECRET, CSRF_SECRET — DB credentials live in Hyperdrive.
-  //
-  // Web config → config/client.ts (Vite only)
-  // API config  → config/server.ts (Worker runtime only)
+    "AUTH_BASE_URL": "http://localhost:8787"
+  }
+  // When database.enabled, uncomment Hyperdrive:
+  // "hyperdrive": [
+  //   {
+  //     "binding": "HYPERDRIVE",
+  //     "id": "00000000-0000-0000-0000-000000000000",
+  //     "localConnectionString": "postgres://postgres:postgres@127.0.0.1:5432/duneta"
+  //   }
+  // ]
 }

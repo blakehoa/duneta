@@ -5,16 +5,16 @@
   "compatibility_date": "2026-06-24",
   "compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env"],
   "vars": {
-    "NODE_ENV": "development"
-  },
-  // When database.enabled in config/server.ts, add Hyperdrive bindings:
+    "NODE_ENV": "development",
+    "AUTH_BASE_URL": "http://localhost:8787"
+  }
+  // When database.enabled in config/server.ts, add Hyperdrive:
   // "hyperdrive": [
   //   {
   //     "binding": "HYPERDRIVE",
-  //     "id": "<your-hyperdrive-config-id>",
+  //     "id": "00000000-0000-0000-0000-000000000000",
   //     "localConnectionString": "postgres://user:pass@127.0.0.1:5432/db"
   //   }
   // ]
-  // Cron triggers (requires `cron.enabled: true` in config/server.ts):
-  // "triggers": { "crons": ["0 0 * * *"] }
+  // Cron: "triggers": { "crons": ["0 0 * * *"] }
 }

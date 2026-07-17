@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "{{name}}",
+  "main": "worker.ts",
+  "compatibility_date": "2026-06-24",
+  "compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env"],
+  "vars": {
+    "NODE_ENV": "production",
+    "AUTH_BASE_URL": "https://your-domain.example"
+  }
+  // When database.enabled in config/server.ts, add a real Hyperdrive id (no localConnectionString):
+  // "hyperdrive": [
+  //   { "binding": "HYPERDRIVE", "id": "<your-hyperdrive-config-id>" }
+  // ]
+}

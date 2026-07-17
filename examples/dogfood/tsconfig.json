@@ -41,7 +41,7 @@
       "duneta/config/client/react-router": ["../../packages/duneta/dist/config/client/react-router"],
       "duneta/config/client/load": ["../../packages/duneta/dist/config/client/load"],
       "duneta/config/client/bootstrap": ["../../packages/duneta/dist/config/client/bootstrap"],
-      "duneta/config/server": ["../../packages/duneta/dist/config/server/index"],
+      "duneta/config/server": ["../../packages/duneta/config/server/index.ts"],
       "duneta/worker": ["../../packages/duneta/dist/worker/index"],
       "~/*": ["app/*"]
     }

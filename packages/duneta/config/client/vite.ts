@@ -1,9 +1,22 @@
 import path from 'node:path';
+import fs from 'node:fs';
 import { cloudflare } from '@cloudflare/vite-plugin';
 import { reactRouter } from '@react-router/dev/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, type UserConfig } from 'vite';
 import { dunetaWorkerPlugin } from './duneta-worker-plugin.js';
+
+/** Dev: wrangler.jsonc. Prod build/deploy: wrangler.production.jsonc when present. */
+export function resolveWranglerConfigPath(repoRoot: string): string {
+  const override = process.env.DUNETA_WRANGLER_CONFIG;
+  if (override) return path.resolve(repoRoot, override);
+
+  const production = process.env.NODE_ENV === 'production';
+  const prodPath = path.resolve(repoRoot, 'wrangler.production.jsonc');
+  if (production && fs.existsSync(prodPath)) return prodPath;
+
+  return path.resolve(repoRoot, 'wrangler.jsonc');
+}
 
 export function createDunetaViteConfig(repoRoot: string, appRoot: string, overrides: UserConfig = {}): UserConfig {
   return defineConfig({
@@ -15,7 +28,7 @@ export function createDunetaViteConfig(repoRoot: string, appRoot: string, overri
     plugins: [
       dunetaWorkerPlugin(repoRoot),
       cloudflare({
-        configPath: path.resolve(repoRoot, 'wrangler.jsonc'),
+        configPath: resolveWranglerConfigPath(repoRoot),
         viteEnvironment: { name: 'ssr' },
       }),
       tailwindcss(),

@@ -14,6 +14,20 @@ import * as schema from '../http/repositories/schemas/auth.js';
 import type { Auth } from './types.js';
 
 export function createAuth(config: DunetaServerConfig, db: Database | null): Auth | null {
+  if (config.auth?.enabled === true) {
+    if (!db) {
+      throw new Error('[duneta] auth.enabled requires database (Hyperdrive) to be available');
+    }
+    if (!config.auth.secret) {
+      throw new Error('[duneta] auth.enabled requires AUTH_SECRET (wrangler secret put AUTH_SECRET)');
+    }
+    if (!config.auth.baseUrl) {
+      throw new Error(
+        '[duneta] auth.enabled requires AUTH_BASE_URL (wrangler vars / .env)',
+      );
+    }
+  }
+
   if (!isAuthEnabled(config) || !db) return null;
 
   const { auth: authConfig } = config;
