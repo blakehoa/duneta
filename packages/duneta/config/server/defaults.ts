@@ -1,4 +1,4 @@
-import { DEFAULT_DATABASE_POOL } from './database';
+import { DEFAULT_WORKER_DATABASE_POOL } from './database';
 import { DEFAULT_RATE_LIMIT_RULES } from './rate-limit';
 import type { DunetaServerConfig } from './types';
 
@@ -26,7 +26,7 @@ export function createDefaultConfig(): DunetaServerConfig {
       enabled: false,
       default: 'primary',
       connections: {},
-      pool: { ...DEFAULT_DATABASE_POOL },
+      pool: { ...DEFAULT_WORKER_DATABASE_POOL },
     },
 
     auth: {

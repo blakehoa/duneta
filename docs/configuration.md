@@ -25,17 +25,21 @@ Cấu hình sai → runtime lỗi. Framework không tự skip.
 **Prod:**
 
 ```bash
-wrangler secret put DATABASE_URL
 wrangler secret put AUTH_SECRET
 wrangler secret put CSRF_SECRET
 ```
+
+Postgres credentials live on the **Hyperdrive** config (dashboard / `wrangler hyperdrive create`), not as `DATABASE_URL` Worker secrets.
 
 Khai báo trong `wrangler.jsonc`:
 
 ```jsonc
 "secrets": {
-  "required": ["DATABASE_URL", "AUTH_SECRET", "CSRF_SECRET"]
-}
+  "required": ["AUTH_SECRET", "CSRF_SECRET"]
+},
+"hyperdrive": [
+  { "binding": "HYPERDRIVE", "id": "<hyperdrive-id>" }
+]
 ```
 
 **CI build:** không set secret env vars, không `.env` — `pnpm build` sạch.
@@ -50,18 +54,22 @@ export default createDunetaWorker();
 `config/server.ts` — chỉ API features + `process.env.*` cho secrets. **`app.name` / `app.env` không cần lặp** — `app.name` chỉ client; `app.env` server auto từ `process.env.NODE_ENV` (Wrangler `vars.NODE_ENV`).
 
 ```ts
-import { defineServerConfig } from 'duneta/config/server';
+import { defineConnections, defineServerConfig, postgres } from 'duneta/config/server';
 
 export default defineServerConfig({
   database: {
     enabled: true,
+    default: 'primary',
     connections: defineConnections({
-      primary: { driver: 'postgres', url: process.env.DATABASE_URL ?? '' },
+      primary: postgres('HYPERDRIVE'),
+      // analytics: postgres('HYPERDRIVE_ANALYTICS'),
     }),
   },
   auth: { enabled: true, secret: process.env.AUTH_SECRET ?? '' },
 });
 ```
+
+When `database.enabled`, every connection **must** use a Hyperdrive binding ([supported engines](https://developers.cloudflare.com/hyperdrive/reference/supported-databases-and-features/)). Extra DBs: `databases` in `registerServices`.
 
 Verify sau build: `grep -r postgresql:// app/build/server/` → rỗng.
 

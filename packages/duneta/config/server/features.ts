@@ -1,9 +1,13 @@
-import { connectionUrl } from './database.js';
+import type { DatabaseConnection } from './database.js';
 import type { AuthProvidersConfig, DunetaServerConfig } from './types.js';
 
 export function isDatabaseEnabled(config: DunetaServerConfig): boolean {
   if (config.database?.enabled !== true) return false;
-  return Boolean(connectionUrl(config.database));
+  const name = config.database.default;
+  const connection = config.database.connections[name as keyof typeof config.database.connections] as
+    | DatabaseConnection
+    | undefined;
+  return Boolean(connection?.hyperdrive);
 }
 
 export function isWorkerRuntime(config: DunetaServerConfig): boolean {

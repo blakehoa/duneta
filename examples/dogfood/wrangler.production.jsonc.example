@@ -8,13 +8,16 @@
     "NODE_ENV": "production"
   },
   "secrets": {
-    "required": ["DATABASE_URL", "AUTH_SECRET", "CSRF_SECRET"]
+    "required": ["AUTH_SECRET", "CSRF_SECRET"]
   },
+  // Origin DB credentials are configured on the Hyperdrive config (dashboard / wrangler CLI),
+  // not as Worker secrets. Add one entry per database.connections.*.hyperdrive binding.
   "hyperdrive": [
     {
       "binding": "HYPERDRIVE",
       "id": "<your-hyperdrive-config-id>"
     }
+    // { "binding": "HYPERDRIVE_ANALYTICS", "id": "<second-hyperdrive-id>" }
   ],
   "r2_buckets": [
     {

@@ -2,10 +2,9 @@ import type { Hono } from 'hono';
 import { createAuth } from '../auth/index.js';
 import { createHttpApp } from '../http/create-app.js';
 import { createCache } from '../http/cache/index.js';
-import { connectionUrl } from '../config/server/database.js';
 import { createControllerContainer } from '../http/container/controller-container.js';
 import { createRepositoryContainer } from '../http/container/repository-container.js';
-import { createDatabase } from '../http/database/index.js';
+import { createDatabases } from '../http/database/index.js';
 import { BaseRepository } from '../http/repositories/base-repository.js';
 import { getConfig } from '../config/server/index.js';
 import type { DunetaServerConfig } from '../config/server/types.js';
@@ -17,18 +16,43 @@ import {
   type ServerOptions,
 } from './types.js';
 import type { RegisterCronJobs } from '../http/cron/index.js';
+import type { Database } from '../http/database/types.js';
 
 let cachedRuntime: RuntimeServices | undefined;
 let cachedAppKey: string | undefined;
 
 function appCacheKey(config: DunetaServerConfig): string {
-  return `${connectionUrl(config.database) ?? ''}:${config.auth?.secret ?? ''}`;
+  const bindings = Object.values(config.database.connections)
+    .map((c) => (c as { hyperdrive?: string } | undefined)?.hyperdrive)
+    .filter(Boolean)
+    .sort()
+    .join(',');
+  return `${bindings}:${config.auth?.secret ?? ''}`;
+}
+
+async function endPool(db: Database | null | undefined) {
+  const pool = (db as { $client?: { end?: () => Promise<void> } } | null | undefined)?.$client;
+  if (pool?.end) await pool.end().catch(() => {});
+}
+
+export async function disposeRuntime() {
+  const runtime = cachedRuntime;
+  cachedRuntime = undefined;
+  cachedAppKey = undefined;
+  if (!runtime) return;
+  const seen = new Set<object>();
+  for (const db of Object.values(runtime.databases)) {
+    if (!db || seen.has(db)) continue;
+    seen.add(db);
+    await endPool(db);
+  }
 }
 
 export type RuntimeServices = {
   app: Hono<RequestContext>;
   config: DunetaServerConfig;
-  db: ReturnType<typeof createDatabase>;
+  db: Database | null;
+  databases: Record<string, Database>;
   auth: ReturnType<typeof createAuth>;
   cache: ReturnType<typeof createCache>;
   controllers: ReturnType<typeof createControllerContainer>;
@@ -47,18 +71,19 @@ export async function loadRuntimeServices(options: ServerOptions): Promise<Runti
   const cacheKey = appCacheKey(config);
 
   if (cachedRuntime && cachedAppKey === cacheKey) return cachedRuntime;
+  if (cachedRuntime) await disposeRuntime();
 
   const controllers = createControllerContainer();
   const repositories = createRepositoryContainer();
-  const db = createDatabase(config);
+  const databases = createDatabases(config);
+  const db = databases[config.database.default] ?? null;
   BaseRepository.bindDb(db);
   const auth = createAuth(config, db);
 
-  handlers.registerServices({ controllers, repositories, db, config });
+  handlers.registerServices({ controllers, repositories, db, databases, config });
 
   const cache = createCache(config.cache);
   const router = await handlers.createApiRouter(config);
-
   const app = createHttpApp({
     router,
     config,
@@ -68,10 +93,12 @@ export async function loadRuntimeServices(options: ServerOptions): Promise<Runti
     controllers,
     repositories,
   });
+
   cachedRuntime = {
     app,
     config,
     db,
+    databases,
     auth,
     cache,
     controllers,
@@ -79,7 +106,6 @@ export async function loadRuntimeServices(options: ServerOptions): Promise<Runti
     registerCron: handlers.registerCron,
   };
   cachedAppKey = cacheKey;
-
   return cachedRuntime;
 }
 

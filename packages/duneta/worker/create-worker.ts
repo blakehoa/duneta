@@ -88,7 +88,7 @@ export function createDunetaWorker(
       const { pathname } = new URL(request.url);
 
       if (pathname === '/api' || pathname.startsWith('/api/')) {
-        return api.fetch(request);
+        return api.fetch(request, env as Record<string, unknown>);
       }
 
       const assets = (env as Record<string, { fetch: typeof fetch } | undefined>)[ASSETS_BINDING];

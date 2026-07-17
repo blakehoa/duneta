@@ -7,6 +7,8 @@ export type ServiceRegistryContext = {
   controllers: ControllerContainer;
   repositories: RepositoryContainer;
   db: Database | null;
+  /** All Hyperdrive-backed connections keyed by config name. */
+  databases: Record<string, Database>;
   config: DunetaServerConfig;
 };
 

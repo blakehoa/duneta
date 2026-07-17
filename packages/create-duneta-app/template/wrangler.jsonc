@@ -7,6 +7,14 @@
   "vars": {
     "NODE_ENV": "development"
   },
+  // When database.enabled in config/server.ts, add Hyperdrive bindings:
+  // "hyperdrive": [
+  //   {
+  //     "binding": "HYPERDRIVE",
+  //     "id": "<your-hyperdrive-config-id>",
+  //     "localConnectionString": "postgres://user:pass@127.0.0.1:5432/db"
+  //   }
+  // ]
   // Cron triggers (requires `cron.enabled: true` in config/server.ts):
   // "triggers": { "crons": ["0 0 * * *"] }
 }

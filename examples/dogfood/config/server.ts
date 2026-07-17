@@ -1,18 +1,12 @@
-import { defineServerConfig } from 'duneta/config/server';
-import {
-  DEFAULT_DATABASE_POOL,
-  defineConnections,
-  RECOMMENDED_RATE_LIMIT_RULES,
-} from 'duneta/config/server';
+import { defineServerConfig, defineConnections, postgres, RECOMMENDED_RATE_LIMIT_RULES } from 'duneta/config/server';
 
 export default defineServerConfig({
   database: {
     enabled: true,
     default: 'primary',
     connections: defineConnections({
-      primary: { driver: 'postgres', url: process.env.DATABASE_URL ?? '' },
+      primary: postgres('HYPERDRIVE'),
     }),
-    pool: DEFAULT_DATABASE_POOL,
   },
   auth: {
     enabled: true,

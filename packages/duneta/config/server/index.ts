@@ -1,14 +1,11 @@
 export {
-  connectionUrl,
-  databasePoolForRuntime,
+  databasePool,
   defineConnections,
-  DEFAULT_DATABASE_POOL,
   DEFAULT_WORKER_DATABASE_POOL,
-  postgresConnection,
+  postgres,
   type DatabaseConfig,
   type DatabaseConnection,
   type DatabasePoolConfig,
-  type PostgresConnection,
 } from './database.js';
 export {
   DEFAULT_CACHE_RETRY,
