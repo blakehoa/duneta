@@ -1,6 +1,6 @@
 {
   "name": "duneta",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Full-stack React + Hono on Cloudflare Workers — dev, build, and deploy CLI.",
   "license": "MIT",
   "type": "module",
