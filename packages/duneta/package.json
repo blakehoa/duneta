@@ -1,6 +1,6 @@
 {
   "name": "duneta",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Full-stack React + Hono on Cloudflare Workers — dev, build, and deploy CLI.",
   "license": "MIT",
   "type": "module",
@@ -11,12 +11,13 @@
     "bin",
     "vite.mjs",
     "scripts",
-    "dist"
+    "dist",
+    "starter"
   ],
   "scripts": {
     "generate:exports": "node ./scripts/generate-exports.mjs",
     "generate:ui": "node ./scripts/generate-ui-wrappers.mjs",
-    "build": "rm -rf dist && node ../../node_modules/typescript/bin/tsc -p tsconfig.build.json && node ../../scripts/fix-esm-imports.mjs dist && mkdir -p dist/starter/layouts dist/views/theme && cp starter/layouts/duneta-home.css dist/starter/layouts/duneta-home.css && cp views/theme/globals.css dist/views/theme/globals.css",
+    "build": "rm -rf dist && node ../../node_modules/typescript/bin/tsc -p tsconfig.build.json && node ../../scripts/fix-esm-imports.mjs dist && mkdir -p dist/starter/layouts dist/views/theme && cp starter/layouts/duneta-home.css dist/starter/layouts/duneta-home.css && cp starter/routers/*.tsx dist/starter/routers/ && cp views/theme/globals.css dist/views/theme/globals.css",
     "typecheck": "node ../../node_modules/typescript/bin/tsc --noEmit",
     "verify:publish": "pnpm run build && node ./scripts/generate-exports.mjs && npm pack --dry-run",
     "prepublishOnly": "pnpm run build && node ./scripts/generate-exports.mjs",

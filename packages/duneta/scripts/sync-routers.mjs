@@ -30,11 +30,17 @@ bootstrapConfig(${JSON.stringify(patch)});
  */
 export function syncRouters(projectRoot, appRoot, dunetaRoot, webConfig) {
   const webPages = path.join(appRoot, 'pages');
-  const defaultRouters = path.join(dunetaRoot, 'starter', 'routers');
+  const routerCandidates = [
+    path.join(dunetaRoot, 'starter', 'routers'),
+    path.join(dunetaRoot, 'dist', 'starter', 'routers'),
+  ];
+  const defaultRouters = routerCandidates.find((dir) =>
+    fs.existsSync(path.join(dir, 'layout.tsx')),
+  );
   const outDir = path.join(appRoot, '.router-runtime');
 
-  if (!fs.existsSync(defaultRouters)) {
-    throw new Error(`Missing default routers at ${defaultRouters}`);
+  if (!defaultRouters) {
+    throw new Error(`Missing default routers (looked in: ${routerCandidates.join(', ')})`);
   }
 
   fs.rmSync(outDir, { recursive: true, force: true });
