@@ -21,7 +21,8 @@ export function isAuthEnabled(config: DunetaServerConfig): boolean {
 }
 
 export function isCacheEnabled(config: DunetaServerConfig): boolean {
-  return config.cache?.enabled === true;
+  if (config.cache?.enabled !== true) return false;
+  return Object.keys(config.cache.stores).length > 0;
 }
 
 export function isStorageEnabled(config: DunetaServerConfig): boolean {

@@ -1,7 +1,7 @@
 import type { Hono } from 'hono';
 import { createAuth } from '../auth/index.js';
 import { createHttpApp } from '../http/create-app.js';
-import { createCache } from '../http/cache/index.js';
+import { createCaches, defaultCache, type Cache } from '../http/cache/index.js';
 import { createControllerContainer } from '../http/container/controller-container.js';
 import { createRepositoryContainer } from '../http/container/repository-container.js';
 import { createDatabases } from '../http/database/index.js';
@@ -54,7 +54,8 @@ export type RuntimeServices = {
   db: Database | null;
   databases: Record<string, Database>;
   auth: ReturnType<typeof createAuth>;
-  cache: ReturnType<typeof createCache>;
+  cache: Cache;
+  caches: Record<string, Cache>;
   controllers: ReturnType<typeof createControllerContainer>;
   repositories: ReturnType<typeof createRepositoryContainer>;
   registerCron?: RegisterCronJobs;
@@ -78,11 +79,13 @@ export async function loadRuntimeServices(options: ServerOptions): Promise<Runti
   const databases = createDatabases(config);
   const db = databases[config.database.default] ?? null;
   BaseRepository.bindDb(db);
-  const auth = createAuth(config, db);
+
+  const caches = createCaches(config.cache);
+  const cache = defaultCache(config.cache, caches);
+  const auth = createAuth(config, db, caches);
 
   handlers.registerServices({ controllers, repositories, db, databases, config });
 
-  const cache = createCache(config.cache);
   const router = await handlers.createApiRouter(config);
   const app = createHttpApp({
     router,
@@ -90,6 +93,7 @@ export async function loadRuntimeServices(options: ServerOptions): Promise<Runti
     db,
     auth,
     cache,
+    caches,
     controllers,
     repositories,
   });
@@ -101,6 +105,7 @@ export async function loadRuntimeServices(options: ServerOptions): Promise<Runti
     databases,
     auth,
     cache,
+    caches,
     controllers,
     repositories,
     registerCron: handlers.registerCron,

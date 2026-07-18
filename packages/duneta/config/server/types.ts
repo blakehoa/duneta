@@ -67,9 +67,25 @@ export type AuthSessionConfig = {
     sameSite: 'lax' | 'strict' | 'none';
     path: string;
   };
+  /**
+   * Signed session payload in the browser cookie (Better Auth `cookieCache`).
+   * Keep `maxAge` short so revoke takes effect quickly on other devices.
+   */
   cookieCache?: {
     enabled?: boolean;
+    /** Seconds — prefer 60–300, not `expiresIn`. */
     maxAge?: number;
+  };
+  /**
+   * App-cache secondary storage (Better Auth `secondaryStorage`).
+   * When enabled, sessions are also stored in Redis/etc. Keep Postgres via `storeSessionInDatabase`.
+   */
+  cache?: {
+    enabled?: boolean;
+    /** Key prefix in the cache store. Default: `session`. */
+    key?: string;
+    /** Named store in `cache.stores`. Omit → default cache. */
+    store?: string;
   };
 };
 

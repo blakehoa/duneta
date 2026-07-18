@@ -6,7 +6,9 @@ async function redisHttpCommand(
   token: string | undefined,
   command: (string | number)[],
 ): Promise<unknown> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const response = await fetch(endpoint, {
@@ -35,16 +37,23 @@ export function createRedisHttpStore(config: RedisStoreOptions): CacheStore {
   return {
     get: async (key) => {
       const result = await redisHttpCommand(endpoint, token, ['GET', key]);
-      return result === null ? null : String(result);
+      return result == null ? null : (result as string);
     },
     set: async (key, value, ttlMs) => {
       if (ttlMs) {
-        await redisHttpCommand(endpoint, token, ['SET', key, value, 'PX', ttlMs]);
+        await redisHttpCommand(endpoint, token, [
+          'SET',
+          key,
+          value,
+          'PX',
+          ttlMs,
+        ]);
         return;
       }
       await redisHttpCommand(endpoint, token, ['SET', key, value]);
     },
-    incr: async (key) => Number(await redisHttpCommand(endpoint, token, ['INCR', key])),
+    incr: async (key) =>
+      Number(await redisHttpCommand(endpoint, token, ['INCR', key])),
     del: async (key) => {
       await redisHttpCommand(endpoint, token, ['DEL', key]);
     },

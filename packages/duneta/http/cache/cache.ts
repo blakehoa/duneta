@@ -1,13 +1,12 @@
 import type { CacheStore } from './types.js';
 
-/** Application cache facade — use `get` / `set` / `has` / `forget` everywhere. */
+/** Application cache — use `get` / `set` / `has` / `forget` everywhere. */
 export class Cache {
   readonly enabled: boolean;
 
   constructor(
     private readonly store: CacheStore,
     readonly driver: string,
-    readonly distributed: boolean,
     enabled = true,
   ) {
     this.enabled = enabled;
@@ -21,20 +20,12 @@ export class Cache {
     return this.store.set(key, value, ttlMs);
   }
 
-  check(key: string): Promise<boolean> {
-    return this.has(key);
-  }
-
   async has(key: string): Promise<boolean> {
     return (await this.store.get(key)) !== null;
   }
 
   forget(key: string): Promise<void> {
     return this.store.del(key);
-  }
-
-  del(key: string): Promise<void> {
-    return this.forget(key);
   }
 
   incr(key: string): Promise<number> {

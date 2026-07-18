@@ -8,25 +8,21 @@ export {
   type DatabasePoolConfig,
 } from './database.js';
 export {
-  DEFAULT_CACHE_RETRY,
-  DEFAULT_CACHE_TIMEOUT,
-  isCacheActive,
+  customCache,
+  defineCacheStores,
   memcachedCache,
   memoryCache,
   redisCache,
   resolveRedisTransport,
-  type ActiveCacheConfig,
   type CacheConfig,
-  type CacheDisabled,
   type CacheDriver,
-  type CacheRetryConfig,
-  type CacheTimeoutConfig,
+  type CacheStoreEntry,
   type CacheTransport,
-  type MemcachedCacheConfig,
+  type CustomCacheStore,
+  type MemcachedCacheStore,
   type MemcachedStoreOptions,
-  type MemoryCacheConfig,
-  type MemoryStoreOptions,
-  type RedisCacheConfig,
+  type MemoryCacheStore,
+  type RedisCacheStore,
   type RedisStoreOptions,
 } from './cache.js';
 export {
@@ -53,6 +49,7 @@ export {
 export {
   createDefaultConfig,
   DEFAULT_CONFIG_APP_PORT,
+  DEFAULT_COOKIE_CACHE_MAX_AGE,
   DEFAULT_TIMEZONE,
 } from './defaults.js';
 export { IMAGE_OPTIMIZATION_PATH } from './image-path.js';

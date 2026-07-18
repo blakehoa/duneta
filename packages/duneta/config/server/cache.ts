@@ -1,109 +1,88 @@
-export type CacheDriver = 'memory' | 'redis' | 'memcached';
+export type CacheDriver = 'memory' | 'redis' | 'memcached' | 'custom';
 
 export type CacheTransport = 'tcp' | 'http';
 
-export type CacheRetryConfig = {
-  maxAttempts: number;
-  delayMs: number;
-  backoffMultiplier: number;
-};
-
-export type CacheTimeoutConfig = {
-  connectionTimeout: number;
-  commandTimeout: number;
-};
-
-export const DEFAULT_CACHE_RETRY: CacheRetryConfig = {
-  maxAttempts: 3,
-  delayMs: 1000,
-  backoffMultiplier: 2,
-};
-
-export const DEFAULT_CACHE_TIMEOUT: CacheTimeoutConfig = {
-  connectionTimeout: 5000,
-  commandTimeout: 3000,
-};
-
-export type MemoryStoreOptions = Record<string, never>;
-
-export type RedisStoreOptions = CacheTimeoutConfig & {
+export type RedisStoreOptions = {
   /** `redis://` / `rediss://` (TCP) or `https://` (HTTP command API). */
   url?: string;
   transport?: CacheTransport;
-  host?: string;
-  port?: number;
   password?: string;
   /** Bearer token for HTTP transport (falls back to `password`). */
   token?: string;
-  db?: number;
-  retry?: Partial<CacheRetryConfig>;
 };
 
-export type MemcachedStoreOptions = CacheTimeoutConfig & {
+export type MemcachedStoreOptions = {
   url?: string;
   host?: string;
   port?: number;
   username?: string;
   password?: string;
-  retry?: Partial<CacheRetryConfig>;
 };
 
-export type CacheDisabled = { enabled?: false };
+/** One named store — mirrors `DatabaseConnection`. */
+export type MemoryCacheStore = { driver: 'memory' };
 
-export type MemoryCacheConfig = {
-  enabled: true;
-  driver: 'memory';
-  store?: MemoryStoreOptions;
-};
-
-export type RedisCacheConfig = {
-  enabled: true;
+export type RedisCacheStore = {
   driver: 'redis';
   store: RedisStoreOptions;
 };
 
-export type MemcachedCacheConfig = {
-  enabled: true;
+export type MemcachedCacheStore = {
   driver: 'memcached';
   store: MemcachedStoreOptions;
 };
 
-export type CacheConfig =
-  | CacheDisabled
-  | MemoryCacheConfig
-  | RedisCacheConfig
-  | MemcachedCacheConfig;
+export type CustomCacheStore = {
+  driver: 'custom';
+  /** Id passed to `registerCacheStore()`. */
+  provider: string;
+  options?: Record<string, unknown>;
+};
 
-export type ActiveCacheConfig = MemoryCacheConfig | RedisCacheConfig | MemcachedCacheConfig;
+export type CacheStoreEntry =
+  | MemoryCacheStore
+  | RedisCacheStore
+  | MemcachedCacheStore
+  | CustomCacheStore;
 
-export function isCacheActive(config: CacheConfig): config is ActiveCacheConfig {
-  return config.enabled === true;
+/** Multi-store cache — mirrors `DatabaseConfig`. */
+export type CacheConfig<TStores extends object = Record<string, CacheStoreEntry>> = {
+  enabled?: boolean;
+  /** Default store name — falls back to the first store when omitted. */
+  default?: string;
+  stores: TStores;
+};
+
+export function memoryCache(): MemoryCacheStore {
+  return { driver: 'memory' };
 }
 
-export function memoryCache(store: MemoryStoreOptions = {}): MemoryCacheConfig {
-  return { enabled: true, driver: 'memory', store };
+export function redisCache(store: RedisStoreOptions = {}): RedisCacheStore {
+  return { driver: 'redis', store };
 }
 
-export function redisCache(store: Partial<RedisStoreOptions> = {}): RedisCacheConfig {
-  return {
-    enabled: true,
-    driver: 'redis',
-    store: { ...DEFAULT_CACHE_TIMEOUT, retry: { ...DEFAULT_CACHE_RETRY }, ...store },
+export function memcachedCache(store: MemcachedStoreOptions = {}): MemcachedCacheStore {
+  return { driver: 'memcached', store };
+}
+
+export function customCache(
+  provider: string,
+  options?: Record<string, unknown>,
+): CustomCacheStore {
+  return { driver: 'custom', provider, options };
+}
+
+/** Mirror `defineConnections` — drops undefined entries. */
+export function defineCacheStores<const T extends Record<string, CacheStoreEntry | undefined>>(
+  stores: T,
+) {
+  const resolved = {} as {
+    [K in keyof T as T[K] extends CacheStoreEntry ? K : never]: NonNullable<T[K]>;
   };
-}
-
-export function memcachedCache(store: Partial<MemcachedStoreOptions> = {}): MemcachedCacheConfig {
-  return {
-    enabled: true,
-    driver: 'memcached',
-    store: {
-      host: 'localhost',
-      port: 11211,
-      retry: { ...DEFAULT_CACHE_RETRY },
-      ...DEFAULT_CACHE_TIMEOUT,
-      ...store,
-    },
-  };
+  for (const [name, store] of Object.entries(stores)) {
+    if (store) Object.assign(resolved, { [name]: store });
+  }
+  return resolved;
 }
 
 export function resolveRedisTransport(config: RedisStoreOptions): CacheTransport {

@@ -1,52 +1,58 @@
-import type { ActiveCacheConfig, CacheConfig } from '../../../config/server/cache.js';
-import { isCacheActive, resolveRedisTransport } from '../../../config/server/cache.js';
+import type { CacheStoreEntry } from '../../../config/server/cache.js';
+import { resolveRedisTransport } from '../../../config/server/cache.js';
 import type { CacheStore } from '../types.js';
 import { MemoryCacheStore } from './memory.js';
-import { NullCacheStore } from './null.js';
 import { createRedisHttpStore } from './redis-http.js';
 
-export type CacheStoreFactory = (config: ActiveCacheConfig) => CacheStore;
+export type CacheStoreFactory = (entry: CacheStoreEntry) => CacheStore;
 
 const builtinStores = new Map<string, CacheStoreFactory>([
   ['memory', () => new MemoryCacheStore()],
-  ['redis', (config) => {
-    if (config.driver !== 'redis') {
-      throw new Error('Expected redis cache config.');
-    }
-    if (resolveRedisTransport(config.store) === 'http') {
-      return createRedisHttpStore(config.store);
-    }
-    throw new Error(
-      'Redis TCP is not wired yet. Use an HTTP `url` on Workers, or `driver: "memory"` locally.',
-    );
-  }],
-  ['memcached', () => {
-    throw new Error('Memcached is not wired yet. Use `driver: "redis"` or `driver: "memory"`.');
-  }],
+  [
+    'redis',
+    (entry) => {
+      if (entry.driver !== 'redis') {
+        throw new Error('Expected redis cache store.');
+      }
+      if (resolveRedisTransport(entry.store) === 'http') {
+        return createRedisHttpStore(entry.store);
+      }
+      throw new Error(
+        'Redis TCP is not wired yet. Use an HTTP `url` on Workers, or `driver: "memory"` locally.',
+      );
+    },
+  ],
+  [
+    'memcached',
+    () => {
+      throw new Error('Memcached is not wired yet. Use `driver: "redis"` or `driver: "memory"`.');
+    },
+  ],
 ]);
 
-const customStores = new Map<string, CacheStoreFactory>();
+const customProviders = new Map<string, CacheStoreFactory>();
 
-export function registerCacheStore(driver: string, factory: CacheStoreFactory): void {
-  customStores.set(driver, factory);
+/** Register a custom provider for `customCache('name')` (or override a builtin driver). */
+export function registerCacheStore(provider: string, factory: CacheStoreFactory): void {
+  customProviders.set(provider, factory);
 }
 
-export function createCacheStore(config: CacheConfig): CacheStore {
-  if (!isCacheActive(config)) return new NullCacheStore();
+export function createCacheStore(entry: CacheStoreEntry): CacheStore {
+  if (entry.driver === 'custom') {
+    const factory = customProviders.get(entry.provider);
+    if (!factory) {
+      throw new Error(
+        `Unknown custom cache provider "${entry.provider}". Use registerCacheStore("${entry.provider}", ...) first.`,
+      );
+    }
+    return factory(entry);
+  }
 
-  const factory = customStores.get(config.driver) ?? builtinStores.get(config.driver);
+  const factory = customProviders.get(entry.driver) ?? builtinStores.get(entry.driver);
   if (!factory) {
     throw new Error(
-      `Unknown cache driver "${config.driver}". Built-in: memory, redis, memcached. Use registerCacheStore() for custom drivers.`,
+      `Unknown cache driver "${entry.driver}". Built-in: memory, redis, memcached, custom.`,
     );
   }
-  return factory(config);
-}
-
-export function isDistributedCache(config: CacheConfig): boolean {
-  if (!isCacheActive(config)) return false;
-  if (config.driver === 'memory') return false;
-  if (config.driver === 'redis') return resolveRedisTransport(config.store) === 'http';
-  if (config.driver === 'memcached') return true;
-  return false;
+  return factory(entry);
 }

@@ -23,6 +23,8 @@ export type RateLimitRule = {
 
 export type RateLimitConfig = {
   enabled?: boolean;
+  /** Named store in `cache.stores`. Omit → default cache (or in-memory fallback). */
+  store?: string;
   /** All matching rules apply in order (multi-hop). */
   rules?: RateLimitRule[];
 };

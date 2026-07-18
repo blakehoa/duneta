@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import type { Auth } from '../auth/types.js';
 import { setGlobalCache } from './cache/facade.js';
-import type { Cache } from './cache/index.js';
+import { resolveCache, type Cache } from './cache/index.js';
 import { isCsrfEnabled, isCacheEnabled, isRateLimitEnabled } from '../config/server/features.js';
 import type { DunetaServerConfig } from '../config/server/types.js';
 import type { ControllerContainer } from './container/controller-container.js';
@@ -24,6 +24,7 @@ export type CreateHttpAppOptions = {
   db: Database | null;
   auth: Auth | null;
   cache: Cache;
+  caches?: Record<string, Cache>;
   controllers: ControllerContainer;
   repositories: RepositoryContainer;
 };
@@ -34,6 +35,7 @@ export function createHttpApp({
   db,
   auth,
   cache,
+  caches = {},
   controllers,
   repositories,
 }: CreateHttpAppOptions) {
@@ -44,7 +46,10 @@ export function createHttpApp({
   app.use('*', createCoreMiddleware(config));
 
   if (isRateLimitEnabled(config)) {
-    app.use('*', createRateLimitMiddleware(config.security.rateLimit, isCacheEnabled(config) ? cache : null));
+    const rateLimitCache = isCacheEnabled(config)
+      ? resolveCache(caches, config.security.rateLimit.store, cache)
+      : null;
+    app.use('*', createRateLimitMiddleware(config.security.rateLimit, rateLimitCache));
   }
 
   if (isCsrfEnabled(config)) {
@@ -55,7 +60,7 @@ export function createHttpApp({
 
   app.onError(createErrorHandler(config));
 
-  setGlobalCache(cache);
+  setGlobalCache(cache, caches);
 
   attachRequestServices(app, config, { db, auth, cache, controllers, repositories });
 

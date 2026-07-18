@@ -4,6 +4,8 @@ import type { DunetaServerConfig } from './types';
 
 export const DEFAULT_CONFIG_APP_PORT = 8787;
 export const DEFAULT_TIMEZONE = 'Asia/Ho_Chi_Minh';
+/** Better Auth cookieCache maxAge (seconds) — keep short for revoke. */
+export const DEFAULT_COOKIE_CACHE_MAX_AGE = 60 * 5;
 
 const THREE_DAYS = 60 * 60 * 24 * 3;
 const THIRTY_DAYS = 60 * 60 * 24 * 30;
@@ -55,7 +57,8 @@ export function createDefaultConfig(): DunetaServerConfig {
           sameSite: 'lax',
           path: '/',
         },
-        cookieCache: { enabled: true, maxAge: THREE_DAYS },
+        cookieCache: { enabled: true, maxAge: DEFAULT_COOKIE_CACHE_MAX_AGE },
+        cache: { enabled: false, key: 'session' },
       },
     },
 
@@ -90,7 +93,7 @@ export function createDefaultConfig(): DunetaServerConfig {
       permissionsPolicy: 'camera=(), microphone=(), geolocation=()',
     },
 
-    cache: { enabled: false },
+    cache: { enabled: false, stores: {} },
 
     storage: { enabled: false },
 

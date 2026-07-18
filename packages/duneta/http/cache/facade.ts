@@ -1,23 +1,21 @@
 import { Cache } from './cache.js';
-import { NullCacheStore } from './stores/null.js';
+import { disabledCache, resolveCache } from './create-cache.js';
 
-const disabled = new Cache(new NullCacheStore(), 'none', false, false);
+let active: Cache = disabledCache;
+let stores: Record<string, Cache> = {};
 
-let active: Cache = disabled;
-
-/** Wire the global cache instance (called on boot). */
-export function setGlobalCache(cache: Cache): void {
+/** Wire the global cache instance(s) (called on boot). */
+export function setGlobalCache(cache: Cache, all: Record<string, Cache> = {}): void {
   active = cache;
+  stores = all;
 }
 
 /**
- * Global cache facade — use anywhere without injecting context.
+ * Global cache facade — default store, or `cached.store('name')` for a named one.
  *
  * ```ts
- * import { cached } from 'duneta/http/cache';
  * await cached.set('key', 'value', 60_000);
- * await cached.get('key');
- * await cached.has('key');
+ * await cached.store('second').get('key');
  * ```
  */
 export const cached = {
@@ -37,16 +35,8 @@ export const cached = {
     return active.has(key);
   },
 
-  check(key: string) {
-    return active.check(key);
-  },
-
   forget(key: string) {
     return active.forget(key);
-  },
-
-  del(key: string) {
-    return active.del(key);
   },
 
   incr(key: string) {
@@ -59,5 +49,10 @@ export const cached = {
 
   ping() {
     return active.ping();
+  },
+
+  /** Named store from `cache.stores` — throws if missing. */
+  store(name: string): Cache {
+    return resolveCache(stores, name, disabledCache);
   },
 };
