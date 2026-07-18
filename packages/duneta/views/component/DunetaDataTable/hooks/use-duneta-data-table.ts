@@ -374,6 +374,7 @@ export function useDunetaDataTable<TData extends object>({
 
   const pageRowIdsRef = useRef<string[]>([]);
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns mutable table state by design
   const table = useReactTable({
     columns: tableColumns,
     data,

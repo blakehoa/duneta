@@ -7,7 +7,9 @@ import type {
 
 export type WebRoute<TLoadContext = unknown> = {
   path: DunetaPathMatcher;
-  middleware?: DunetaPageMiddleware<TLoadContext> | DunetaPageMiddleware<TLoadContext>[];
+  middleware?:
+    | DunetaPageMiddleware<TLoadContext>
+    | DunetaPageMiddleware<TLoadContext>[];
   layout?: string;
   page?: string;
   children?: WebRoute<TLoadContext>[];
@@ -30,6 +32,7 @@ export function WebRoute<TLoadContext = unknown>(
   return route;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-namespace -- public type/value API: WebRoute.define + WebRoute.Config
 export namespace WebRoute {
   export type Definition<TLoadContext = unknown> = WebRoute<TLoadContext>;
   export type Router<TLoadContext = unknown> = WebRouter<TLoadContext>;
@@ -72,7 +75,10 @@ function toArray<T>(value: T | T[] | undefined): T[] {
   return Array.isArray(value) ? value : [value];
 }
 
-function joinRoutePath(parentPath: string, childPath: DunetaPathMatcher): DunetaPathMatcher {
+function joinRoutePath(
+  parentPath: string,
+  childPath: DunetaPathMatcher,
+): DunetaPathMatcher {
   if (typeof childPath !== 'string') return childPath;
   if (!parentPath || childPath.startsWith('/')) return childPath;
   return `${parentPath.replace(/\/$/, '')}/${childPath.replace(/^\//, '')}`;
@@ -87,7 +93,8 @@ export function collectWebRouteMiddlewares<TLoadContext = unknown>(
 
   function visit(route: WebRoute<TLoadContext>, parentPath = '') {
     const routePath = joinRoutePath(parentPath, route.path);
-    if (!matchesAnyDunetaPath([routePath], context.url.pathname, context)) return;
+    if (!matchesAnyDunetaPath([routePath], context.url.pathname, context))
+      return;
 
     middlewares.push(...toArray(route.middleware));
 

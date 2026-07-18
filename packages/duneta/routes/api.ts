@@ -25,6 +25,7 @@ export function ApiRoute(route: ApiRoute): ApiRoute {
   return route;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-namespace -- public type/value API: ApiRoute.define + ApiRoute.Config
 export namespace ApiRoute {
   export type Definition = ApiRoute;
   export type Endpoint = ApiEndpoint;
@@ -34,7 +35,10 @@ export namespace ApiRoute {
       | HonoType<RequestContext>
       | ((
           config: DunetaServerConfig,
-        ) => ApiRoute[] | HonoType<RequestContext> | Promise<ApiRoute[] | HonoType<RequestContext>>);
+        ) =>
+          | ApiRoute[]
+          | HonoType<RequestContext>
+          | Promise<ApiRoute[] | HonoType<RequestContext>>);
   };
 
   export function define(route: ApiRoute): ApiRoute {
@@ -72,7 +76,8 @@ function mountApiRoute(route: ApiRoute) {
 
 export function composeApiRoutes(routes: ApiRoute[]) {
   const router = new Hono<RequestContext>();
-  for (const route of routes) router.route(normalizePath(route.path), mountApiRoute(route));
+  for (const route of routes)
+    router.route(normalizePath(route.path), mountApiRoute(route));
   return router;
 }
 
@@ -123,21 +128,31 @@ export async function buildApiRouter(
 
 export const healthRoutes = ApiRoute({
   path: '/health',
-  endpoints: [{ method: 'GET', handler: resolveController('HealthController', 'show') }],
+  endpoints: [
+    { method: 'GET', handler: resolveController('HealthController', 'show') },
+  ],
 });
 
 export const meRoutes = ApiRoute({
   path: '/me',
-  endpoints: [{ method: 'GET', handler: resolveController('MeController', 'show') }],
+  endpoints: [
+    { method: 'GET', handler: resolveController('MeController', 'show') },
+  ],
 });
 
-export function createUsersRoutes(middleware: MiddlewareHandler[] = [requireSession()]) {
+export function createUsersRoutes(
+  middleware: MiddlewareHandler[] = [requireSession()],
+) {
   return ApiRoute({
     path: '/users',
     middleware,
     endpoints: [
       { method: 'GET', handler: resolveController('UserController', 'index') },
-      { method: 'GET', path: '/:id', handler: resolveController('UserController', 'show') },
+      {
+        method: 'GET',
+        path: '/:id',
+        handler: resolveController('UserController', 'show'),
+      },
     ],
   });
 }
@@ -152,8 +167,16 @@ export function createStorageRoutes(
     middleware,
     endpoints: [
       { method: 'POST', handler: resolveController(controllerKey, 'store') },
-      { method: 'GET', path: '/meta', handler: resolveController(controllerKey, 'head') },
-      { method: 'DELETE', path: '/objects', handler: resolveController(controllerKey, 'destroy') },
+      {
+        method: 'GET',
+        path: '/meta',
+        handler: resolveController(controllerKey, 'head'),
+      },
+      {
+        method: 'DELETE',
+        path: '/objects',
+        handler: resolveController(controllerKey, 'destroy'),
+      },
     ],
   });
 }

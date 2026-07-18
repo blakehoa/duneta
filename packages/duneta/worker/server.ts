@@ -1,7 +1,11 @@
 import { createCronKernel, runDueCronJobs } from '../http/cron/index.js';
 import { isCronEnabled } from '../config/server/index.js';
-import { clearWorkerEnv, setWorkerEnv, type WorkerEnv } from '../http/database/worker-env.js';
-import { disposeRuntime, loadApp, loadRuntimeServices } from './boot.js';
+import {
+  openRequestDatabases,
+  runWithRequestDatabases,
+  type WorkerEnv,
+} from '../http/database/index.js';
+import { loadApp, loadRuntimeServices } from './boot.js';
 import type { ServerOptions } from './types.js';
 import { loadServerConfig } from './load-config.js';
 
@@ -10,7 +14,7 @@ export type {
   RegisterServices,
   ServiceRegistryContext,
 } from '../http/container/index.js';
-export type { WorkerEnv } from '../http/database/worker-env.js';
+export type { WorkerEnv } from '../http/database/types.js';
 
 export type ScheduledControllerLike = {
   cron: string;
@@ -38,41 +42,47 @@ export function defineServer(options: ServerOptions): ServerExport {
     await boot;
   }
 
-  async function withEnv<T>(env: WorkerEnv, run: () => Promise<T>): Promise<T> {
-    setWorkerEnv(env);
-    try {
-      await ensureBoot();
-      return await run();
-    } finally {
-      await disposeRuntime();
-      clearWorkerEnv();
-    }
+  async function withBoot<T>(run: () => Promise<T>): Promise<T> {
+    await ensureBoot();
+    return run();
   }
 
   return {
     async fetch(request, env) {
-      return withEnv(env, async () => {
+      return withBoot(async () => {
         const hono = await loadApp(options);
-        return hono.fetch(request);
+        return hono.fetch(request, env);
       });
     },
     async scheduled(controller, env, ctx) {
-      await withEnv(env as WorkerEnv, async () => {
+      await withBoot(async () => {
         const runtime = await loadRuntimeServices(options);
         if (!isCronEnabled(runtime.config)) return;
 
+        const databases = await openRequestDatabases(
+          runtime.config,
+          env as WorkerEnv,
+        );
+        const db = databases[runtime.config.database.default] ?? null;
+        const auth = db ? runtime.auth : null;
+
         const kernel = await createCronKernel(runtime.registerCron);
-        await runDueCronJobs(kernel.due(controller.cron), {
-          cron: controller.cron,
-          scheduledTime: controller.scheduledTime,
-          config: runtime.config,
-          db: runtime.db,
-          auth: runtime.auth,
-          cache: runtime.cache,
-          controllers: runtime.controllers,
-          repositories: runtime.repositories,
-          waitUntil: (promise) => ctx.waitUntil(promise),
-        });
+        await runWithRequestDatabases(
+          databases,
+          runtime.config.database.default,
+          () =>
+            runDueCronJobs(kernel.due(controller.cron), {
+              cron: controller.cron,
+              scheduledTime: controller.scheduledTime,
+              config: runtime.config,
+              db,
+              auth,
+              cache: runtime.cache,
+              controllers: runtime.controllers,
+              repositories: runtime.repositories,
+              waitUntil: (promise) => ctx.waitUntil(promise),
+            }),
+        );
       });
     },
   };

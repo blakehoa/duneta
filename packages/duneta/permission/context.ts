@@ -1,17 +1,7 @@
 import type { Context } from 'hono';
 import type { RequestContext } from '../middleware/http/request-context.js';
 import { createPermissionCheck } from './check.js';
-import type { PermissionCheck, PermissionContext, PermissionResolver } from './types.js';
-
-let resolver: PermissionResolver | undefined;
-
-export function registerPermissionResolver(fn: PermissionResolver) {
-  resolver = fn;
-}
-
-export function getPermissionResolver() {
-  return resolver;
-}
+import type { PermissionCheck, PermissionContext } from './types.js';
 
 export function getPermissionContext(c: Context<RequestContext>) {
   return c.get('permissionContext');
@@ -21,7 +11,13 @@ export function getPermissionCheck(c: Context<RequestContext>) {
   return c.get('permissionCheck');
 }
 
-export function requirePermissionCheck(c: Context<RequestContext>): PermissionCheck {
+export function getPermissionResolver(c: Context<RequestContext>) {
+  return c.get('permissionResolver');
+}
+
+export function requirePermissionCheck(
+  c: Context<RequestContext>,
+): PermissionCheck {
   const check = getPermissionCheck(c);
   if (!check) {
     throw new Error(
@@ -31,7 +27,10 @@ export function requirePermissionCheck(c: Context<RequestContext>): PermissionCh
   return check;
 }
 
-export function setPermissions(c: Context<RequestContext>, context: PermissionContext): PermissionCheck {
+export function setPermissions(
+  c: Context<RequestContext>,
+  context: PermissionContext,
+): PermissionCheck {
   const check = createPermissionCheck(context);
   c.set('permissionContext', context);
   c.set('permissionCheck', check);

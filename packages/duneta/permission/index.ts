@@ -4,7 +4,6 @@ export {
   getPermissionCheck,
   getPermissionContext,
   getPermissionResolver,
-  registerPermissionResolver,
   requirePermissionCheck,
   setPermissions,
 } from './context.js';

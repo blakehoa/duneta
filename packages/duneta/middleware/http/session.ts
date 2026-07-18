@@ -17,7 +17,7 @@ export function requireSession() {
     c.set('userId', session.user.id);
     c.set('session', session);
 
-    const resolve = getPermissionResolver();
+    const resolve = getPermissionResolver(c);
     if (resolve) {
       const context = await resolve({ c, userId: session.user.id });
       if (!context) {

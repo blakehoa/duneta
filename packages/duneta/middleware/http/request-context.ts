@@ -1,5 +1,9 @@
 import type { Auth } from '../../auth/types.js';
-import type { PermissionCheck, PermissionContext } from '../../permission/types.js';
+import type {
+  PermissionCheck,
+  PermissionContext,
+  PermissionResolver,
+} from '../../permission/types.js';
 import type { Cache } from '../../http/cache/index.js';
 import type { ControllerContainer } from '../../http/container/controller-container.js';
 import type { RepositoryContainer } from '../../http/container/repository-container.js';
@@ -17,6 +21,7 @@ export type RequestContext = {
     session?: AuthSession;
     permissionContext?: PermissionContext;
     permissionCheck?: PermissionCheck;
+    permissionResolver?: PermissionResolver;
     requestId: string;
     locale: string;
     timezone: string;

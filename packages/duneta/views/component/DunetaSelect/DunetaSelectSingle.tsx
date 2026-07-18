@@ -136,6 +136,7 @@ export function DunetaSelectSingle<T extends string = string>({
       );
   }, [enabledSearch, fuzzy, options, rules, searchQuery]);
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual owns mutable virtualizer state by design
   const rowVirtualizer = useVirtualizer({
     count: filteredOptions.length,
     getScrollElement: () => scrollRef.current,

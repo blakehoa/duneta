@@ -15,12 +15,21 @@ function bin(pkg, file = 'bin.cjs') {
 }
 
 function wrangler() {
-  return path.join(path.dirname(require.resolve('wrangler/package.json')), 'bin/wrangler.js');
+  return path.join(
+    path.dirname(require.resolve('wrangler/package.json')),
+    'bin/wrangler.js',
+  );
 }
 
 function run(cmd, args, cwd = projectRoot) {
   const r = spawnSync(cmd, args, { stdio: 'inherit', cwd, env: process.env });
-  if (r.error || r.status !== 0) process.exit(r.status ?? 1);
+  if (r.error) {
+    console.error(
+      `[duneta] failed to start ${path.basename(cmd)}: ${r.error.message}`,
+    );
+    process.exit(1);
+  }
+  if (r.status !== 0) process.exit(r.status ?? 1);
 }
 
 function ensureDir(dir) {
@@ -29,7 +38,9 @@ function ensureDir(dir) {
 
 function writeNewFile(file, content) {
   if (existsSync(file)) {
-    console.error(`[duneta] ${path.relative(projectRoot, file)} already exists`);
+    console.error(
+      `[duneta] ${path.relative(projectRoot, file)} already exists`,
+    );
     process.exit(1);
   }
   ensureDir(path.dirname(file));
@@ -190,7 +201,9 @@ export const ${exportName} = createMiddleware<RequestContext>(async (_c, next) =
 
 function makeCron(name) {
   const base = kebab(name);
-  const cronName = base.endsWith('-cron') ? base.slice(0, -'-cron'.length) : base;
+  const cronName = base.endsWith('-cron')
+    ? base.slice(0, -'-cron'.length)
+    : base;
   const fileBase = `${cronName}-cron`;
   const className = `${pascal(cronName)}Cron`;
   const cronDir = path.join(projectRoot, 'routes');
@@ -231,7 +244,8 @@ function updateCronKernel(cronDir, fileBase, className) {
   if (!content.includes(importLine)) {
     const importMatches = [...content.matchAll(/^import .+;$/gm)];
     const insertAt = importMatches.length
-      ? importMatches[importMatches.length - 1].index + importMatches[importMatches.length - 1][0].length
+      ? importMatches[importMatches.length - 1].index +
+        importMatches[importMatches.length - 1][0].length
       : 0;
     content = `${content.slice(0, insertAt)}\n${importLine}${content.slice(insertAt)}`;
   }
@@ -240,7 +254,9 @@ function updateCronKernel(cronDir, fileBase, className) {
     const marker = 'defineCronKernel([';
     const markerIndex = content.indexOf(marker);
     if (markerIndex === -1) {
-      console.log(`[duneta] add ${className} to ${path.relative(projectRoot, kernelFile)} manually`);
+      console.log(
+        `[duneta] add ${className} to ${path.relative(projectRoot, kernelFile)} manually`,
+      );
       return;
     }
     const insertAt = content.indexOf('\n', markerIndex + marker.length);
@@ -270,7 +286,9 @@ function buildPackagesIfNeeded() {
 }
 
 async function loadSyncRouters() {
-  const mod = await import(pathToFileURL(path.join(dunetaRoot, 'scripts/sync-routers.mjs')).href);
+  const mod = await import(
+    pathToFileURL(path.join(dunetaRoot, 'scripts/sync-routers.mjs')).href
+  );
   return mod.syncRouters;
 }
 
@@ -278,11 +296,18 @@ function loadWebConfig() {
   const script = path.join(dunetaRoot, 'scripts/load-config.mjs');
   // Prefer the ESM register hook over tsx's CLI (avoids CJS/CLI path coupling).
   const tsxEsm = pathToFileURL(require.resolve('tsx/esm')).href;
-  const r = spawnSync(process.execPath, ['--import', tsxEsm, script, projectRoot], {
-    encoding: 'utf8',
-    cwd: projectRoot,
-  });
-  if (r.status !== 0) throw new Error(r.stderr || r.stdout || 'Failed to load config/client.ts');
+  const r = spawnSync(
+    process.execPath,
+    ['--import', tsxEsm, script, projectRoot],
+    {
+      encoding: 'utf8',
+      cwd: projectRoot,
+    },
+  );
+  if (r.error)
+    throw new Error(`Failed to load config/client.ts: ${r.error.message}`);
+  if (r.status !== 0)
+    throw new Error(r.stderr || r.stdout || 'Failed to load config/client.ts');
   return JSON.parse(r.stdout);
 }
 
@@ -344,9 +369,9 @@ function routeNamesFromRouter(routerSource) {
 }
 
 function exportNames(source) {
-  return [...source.matchAll(/export\s+(?:const|function)\s+([a-zA-Z_$][\w$]*)/g)].map(
-    (match) => match[1],
-  );
+  return [
+    ...source.matchAll(/export\s+(?:const|function)\s+([a-zA-Z_$][\w$]*)/g),
+  ].map((match) => match[1]);
 }
 
 function joinRoutePath(base, leaf = '/') {
@@ -360,23 +385,28 @@ function parseRouteGroups(file) {
   const groups = [];
 
   for (const match of source.matchAll(/ApiRoute\.define\s*\(/g)) {
-      const objectStart = source.indexOf('{', match.index);
-      if (objectStart === -1) continue;
-      const body = extractBalanced(source, objectStart);
-      const basePath = body.match(/\bpath\s*:\s*['"`]([^'"`]+)['"`]/)?.[1];
-      if (!basePath) continue;
+    const objectStart = source.indexOf('{', match.index);
+    if (objectStart === -1) continue;
+    const body = extractBalanced(source, objectStart);
+    const basePath = body.match(/\bpath\s*:\s*['"`]([^'"`]+)['"`]/)?.[1];
+    if (!basePath) continue;
 
-      const endpointsIndex = body.indexOf('endpoints');
-      const arrayStart = endpointsIndex === -1 ? -1 : body.indexOf('[', endpointsIndex);
-      const endpointsBody = arrayStart === -1 ? '' : extractBalanced(body, arrayStart);
-      const endpoints = [];
-      for (const endpointMatch of endpointsBody.matchAll(/\{[^{}]*\bmethod\s*:\s*['"`]([A-Z]+)['"`][^{}]*\}/g)) {
-        const endpoint = endpointMatch[0];
-        const method = endpointMatch[1];
-        const leafPath = endpoint.match(/\bpath\s*:\s*['"`]([^'"`]+)['"`]/)?.[1] ?? '/';
-        endpoints.push({ method, path: joinRoutePath(basePath, leafPath) });
-      }
-      groups.push({ basePath, endpoints });
+    const endpointsIndex = body.indexOf('endpoints');
+    const arrayStart =
+      endpointsIndex === -1 ? -1 : body.indexOf('[', endpointsIndex);
+    const endpointsBody =
+      arrayStart === -1 ? '' : extractBalanced(body, arrayStart);
+    const endpoints = [];
+    for (const endpointMatch of endpointsBody.matchAll(
+      /\{[^{}]*\bmethod\s*:\s*['"`]([A-Z]+)['"`][^{}]*\}/g,
+    )) {
+      const endpoint = endpointMatch[0];
+      const method = endpointMatch[1];
+      const leafPath =
+        endpoint.match(/\bpath\s*:\s*['"`]([^'"`]+)['"`]/)?.[1] ?? '/';
+      endpoints.push({ method, path: joinRoutePath(basePath, leafPath) });
+    }
+    groups.push({ basePath, endpoints });
   }
 
   return groups;
@@ -385,10 +415,16 @@ function parseRouteGroups(file) {
 function frameworkRouteGroups(routerSource) {
   const groups = [];
   if (/\bhealthRoutes\b/.test(routerSource)) {
-    groups.push({ source: 'duneta/routes', endpoints: [{ method: 'GET', path: '/health' }] });
+    groups.push({
+      source: 'duneta/routes',
+      endpoints: [{ method: 'GET', path: '/health' }],
+    });
   }
   if (/\bmeRoutes\b/.test(routerSource)) {
-    groups.push({ source: 'duneta/routes', endpoints: [{ method: 'GET', path: '/me' }] });
+    groups.push({
+      source: 'duneta/routes',
+      endpoints: [{ method: 'GET', path: '/me' }],
+    });
   }
   if (/\b(createUsersRoutes|usersRoutes)\b/.test(routerSource)) {
     groups.push({
@@ -424,7 +460,11 @@ function listRoutes() {
   for (const file of routeFiles) {
     const source = readIfExists(file);
     const names = exportNames(source);
-    if (mounted.size > 0 && names.length > 0 && !names.some((name) => mounted.has(name))) {
+    if (
+      mounted.size > 0 &&
+      names.length > 0 &&
+      !names.some((name) => mounted.has(name))
+    ) {
       continue;
     }
     for (const group of parseRouteGroups(file)) {
@@ -442,7 +482,9 @@ function listRoutes() {
   const methodWidth = Math.max(6, ...rows.map((row) => row.method.length));
   const pathWidth = Math.max(4, ...rows.map((row) => row.path.length));
   for (const row of rows) {
-    console.log(`${row.method.padEnd(methodWidth)} ${row.path.padEnd(pathWidth)} ${row.source}`);
+    console.log(
+      `${row.method.padEnd(methodWidth)} ${row.path.padEnd(pathWidth)} ${row.source}`,
+    );
   }
 }
 
@@ -469,7 +511,9 @@ async function buildAll() {
 function assertDeployableWorkerConfig() {
   const generated = path.join(appRoot, 'build/server/wrangler.json');
   if (!existsSync(generated)) {
-    throw new Error(`[duneta] missing ${path.relative(projectRoot, generated)} — run build first`);
+    throw new Error(
+      `[duneta] missing ${path.relative(projectRoot, generated)} — run build first`,
+    );
   }
   const raw = fs.readFileSync(generated, 'utf8');
   const config = JSON.parse(raw);
@@ -518,7 +562,11 @@ try {
       const syncRouters = await loadSyncRouters();
       syncRouters(projectRoot, appRoot, dunetaRoot, loadWebConfig());
       console.log('[duneta] http://localhost:8787 (HMR)');
-      run(process.execPath, [bin('@react-router/dev'), 'dev', ...rest], projectRoot);
+      run(
+        process.execPath,
+        [bin('@react-router/dev'), 'dev', ...rest],
+        projectRoot,
+      );
       break;
     }
     case 'deploy':
@@ -566,7 +614,9 @@ try {
       break;
     default:
       console.error(`[duneta] unknown command: ${command}`);
-      console.error('[duneta] usage: duneta <dev|build|deploy|prepare|routes|make:page|make:controller|make:repository|make:route|make:policy|make:middleware|make:cron>');
+      console.error(
+        '[duneta] usage: duneta <dev|build|deploy|prepare|routes|make:page|make:controller|make:repository|make:route|make:policy|make:middleware|make:cron>',
+      );
       process.exit(1);
   }
 } catch (error) {

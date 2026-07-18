@@ -20,14 +20,14 @@ Drizzle → Postgres
 
 Helpers có sẵn:
 
-| Method | Mô tả |
-|--------|-------|
-| `json(c, data, status?)` | JSON response |
-| `notFound(c, message?)` | 404 |
-| `unauthorized(c, message?)` | 401 |
-| `userId(c)` | userId từ context |
-| `resolveSession(c)` | Better Auth session |
-| `locale(c)` / `timezone(c)` / `requestId(c)` | request metadata |
+| Method                                       | Mô tả               |
+| -------------------------------------------- | ------------------- |
+| `json(c, data, status?)`                     | JSON response       |
+| `notFound(c, message?)`                      | 404                 |
+| `unauthorized(c, message?)`                  | 401                 |
+| `userId(c)`                                  | userId từ context   |
+| `resolveSession(c)`                          | Better Auth session |
+| `locale(c)` / `timezone(c)` / `requestId(c)` | request metadata    |
 
 ### Ví dụ controller
 
@@ -63,13 +63,13 @@ Handler phải là **arrow function property** (`index = async (c) =>`) để `r
 
 CRUD generic trên Drizzle table có cột `id`:
 
-| Method | Mô tả |
-|--------|-------|
-| `findAll()` | SELECT * |
-| `findById(id)` | SELECT WHERE id |
-| `create(values)` | INSERT RETURNING |
+| Method               | Mô tả            |
+| -------------------- | ---------------- |
+| `findAll()`          | SELECT \*        |
+| `findById(id)`       | SELECT WHERE id  |
+| `create(values)`     | INSERT RETURNING |
 | `update(id, values)` | UPDATE RETURNING |
-| `delete(id)` | DELETE RETURNING |
+| `delete(id)`         | DELETE RETURNING |
 
 ### Ví dụ repository
 
@@ -89,7 +89,31 @@ export class PostRepository extends BaseRepository<typeof post> {
 }
 ```
 
-`db` bind tự động lúc boot qua `BaseRepository.bindDb()` — repository chỉ cần truyền `table`.
+`db` được resolve theo từng request/scheduled invocation — repository chỉ cần truyền `table`.
+
+Nếu repository dùng database mặc định:
+
+```ts
+export class PostRepository extends BaseRepository<typeof post> {
+  constructor() {
+    super(post);
+  }
+}
+```
+
+Nếu repository dùng một connection khác trong `database.connections`, truyền tên connection
+ở tham số thứ hai. Ví dụ `analytics`:
+
+```ts
+export class AnalyticsRepository extends BaseRepository<typeof event> {
+  constructor() {
+    super(event, 'analytics');
+  }
+}
+```
+
+Repository có thể là singleton. `this.db` không giữ client toàn cục mà lấy đúng client của
+request hoặc cron invocation hiện tại.
 
 Schema Drizzle đặt trong `repositories/schemas/` hoặc `packages/duneta/repositories/schemas/` (auth schema ship sẵn).
 
@@ -113,7 +137,11 @@ export const postRoutes = ApiRoute.define({
   path: '/posts',
   endpoints: [
     { method: 'GET', handler: resolveController('PostController', 'index') },
-    { method: 'GET', path: '/:id', handler: resolveController('PostController', 'show') },
+    {
+      method: 'GET',
+      path: '/:id',
+      handler: resolveController('PostController', 'show'),
+    },
   ],
 });
 ```

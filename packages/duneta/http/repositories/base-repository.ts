@@ -1,27 +1,18 @@
 import { eq } from 'drizzle-orm';
 import type { PgColumn, PgTable } from 'drizzle-orm/pg-core';
 import type { Database } from '../database/types.js';
+import { requestDatabase } from '../database/request-context.js';
 
 type TableWithId = PgTable & { id: PgColumn };
 
 export abstract class BaseRepository<TTable extends TableWithId> {
-  private static contextDb: Database | null | undefined;
-
-  /** Gọi một lần lúc boot — trước `registerServices`. */
-  static bindDb(db: Database | null): void {
-    BaseRepository.contextDb = db;
-  }
-
-  constructor(protected readonly table: TTable) {}
+  constructor(
+    protected readonly table: TTable,
+    private readonly database?: string,
+  ) {}
 
   protected get db(): Database {
-    if (BaseRepository.contextDb === undefined) {
-      throw new Error('Repository context not bound. Call BaseRepository.bindDb() at boot.');
-    }
-    if (BaseRepository.contextDb === null) {
-      throw new Error('Database not configured. Set database in config/server.ts.');
-    }
-    return BaseRepository.contextDb;
+    return requestDatabase(this.database);
   }
 
   async findAll() {

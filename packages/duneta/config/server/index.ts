@@ -1,11 +1,8 @@
 export {
-  databasePool,
   defineConnections,
-  DEFAULT_WORKER_DATABASE_POOL,
   postgres,
   type DatabaseConfig,
   type DatabaseConnection,
-  type DatabasePoolConfig,
 } from './database.js';
 export {
   customCache,

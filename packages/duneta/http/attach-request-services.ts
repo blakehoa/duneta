@@ -12,8 +12,11 @@ import type { DunetaServerConfig } from '../config/server/types.js';
 import type { ControllerContainer } from './container/controller-container.js';
 import type { RepositoryContainer } from './container/repository-container.js';
 import type { Database } from './database/types.js';
+import { openRequestDatabases } from './database/create-database.js';
+import { runWithRequestDatabases } from './database/request-context.js';
 import { createLogger } from './logging/index.js';
 import type { RequestContext } from '../middleware/http/request-context.js';
+import type { PermissionResolver } from '../permission/types.js';
 
 export type AttachRequestServicesOptions = {
   db: Database | null;
@@ -21,43 +24,67 @@ export type AttachRequestServicesOptions = {
   cache: Cache;
   controllers: ControllerContainer;
   repositories: RepositoryContainer;
+  permissionResolver?: PermissionResolver;
 };
 
 /** Attach db, auth, cache, and DI containers to each request. */
 export function attachRequestServices(
   app: Hono<RequestContext>,
   config: DunetaServerConfig,
-  { db, auth, cache, controllers, repositories }: AttachRequestServicesOptions,
+  {
+    db,
+    auth,
+    cache,
+    controllers,
+    repositories,
+    permissionResolver,
+  }: AttachRequestServicesOptions,
 ) {
-  app.use('*', createMiddleware(async (c, next) => {
-    c.set('controllers', controllers);
-    c.set('repositories', repositories);
-    await next();
-  }));
+  app.use(
+    '*',
+    createMiddleware(async (c, next) => {
+      c.set('controllers', controllers);
+      c.set('repositories', repositories);
+      if (permissionResolver) c.set('permissionResolver', permissionResolver);
+      await next();
+    }),
+  );
 
   if (db) {
-    app.use('*', createMiddleware(async (c, next) => {
-      c.set('db', db);
-      await next();
-    }));
+    app.use(
+      '*',
+      createMiddleware(async (c, next) => {
+        const databases = await openRequestDatabases(config, c.env);
+        const requestDb = databases[config.database.default];
+        if (!requestDb) throw new Error('Default database is not configured.');
+        c.set('db', requestDb);
+        await runWithRequestDatabases(databases, config.database.default, next);
+      }),
+    );
   }
 
   if (isAuthEnabled(config) && auth) {
     const authPath = resolveAuthMountPath(config.auth.basePath);
 
-    app.use('*', createMiddleware(async (c, next) => {
-      c.set('auth', auth);
-      await next();
-    }));
+    app.use(
+      '*',
+      createMiddleware(async (c, next) => {
+        c.set('auth', auth);
+        await next();
+      }),
+    );
 
     app.all(`${authPath}/*`, (c) => auth.handler(c.req.raw));
   }
 
   if (isCacheEnabled(config)) {
-    app.use('*', createMiddleware(async (c, next) => {
-      c.set('cache', cache);
-      await next();
-    }));
+    app.use(
+      '*',
+      createMiddleware(async (c, next) => {
+        c.set('cache', cache);
+        await next();
+      }),
+    );
   }
 
   if (isLoggingEnabled(config)) {
