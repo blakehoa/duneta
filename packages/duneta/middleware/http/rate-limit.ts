@@ -11,6 +11,15 @@ import type { RequestContext } from './request-context.js';
 
 type CounterEntry = { count: number; resetAt: number };
 type CompiledRule = RateLimitRule & { methodsUpper?: string[] };
+type RateLimitStage = 'all' | 'pre-auth' | 'post-auth';
+type RateLimitResult = {
+  allowed: boolean;
+  count?: number;
+  resetAt: number;
+};
+type NativeRateLimiter = {
+  limit(input: { key: string }): Promise<{ success: boolean }>;
+};
 
 const memoryStore = new Map<string, CounterEntry>();
 const MAX_MEMORY_COUNTERS = 10_000;
@@ -83,11 +92,17 @@ async function resolveRateLimitKey(
       return apiKey ? `apikey:${apiKey}` : `ip:${ip}`;
     }
     case 'user': {
-      const userId = c.get('userId') ?? (await resolveAuthSession(c))?.user?.id;
+      const userId =
+        c.get('userId') ??
+        c.get('session')?.user?.id ??
+        (await resolveAuthSession(c))?.user?.id;
       return userId ? `user:${userId}` : `ip:${ip}`;
     }
     case 'ip+user': {
-      const userId = c.get('userId') ?? (await resolveAuthSession(c))?.user?.id;
+      const userId =
+        c.get('userId') ??
+        c.get('session')?.user?.id ??
+        (await resolveAuthSession(c))?.user?.id;
       return userId ? `ip+user:${ip}:${userId}` : `ip:${ip}`;
     }
     case 'ip+identifier':
@@ -100,13 +115,36 @@ async function resolveRateLimitKey(
 function setRateLimitHeaders(
   c: Context<RequestContext>,
   rule: RateLimitRule,
-  count: number,
+  count: number | undefined,
   resetAt: number,
 ) {
   c.header('X-RateLimit-Limit', String(rule.max));
-  c.header('X-RateLimit-Remaining', String(Math.max(0, rule.max - count)));
+  if (count !== undefined) {
+    c.header('X-RateLimit-Remaining', String(Math.max(0, rule.max - count)));
+  }
   c.header('X-RateLimit-Reset', String(Math.ceil(resetAt / 1000)));
   c.header('X-RateLimit-Rule', rule.name);
+}
+
+async function consumeNativeLimit(
+  c: Context<RequestContext>,
+  rule: RateLimitRule,
+  key: string,
+): Promise<RateLimitResult> {
+  const limiter = rule.binding
+    ? (c.env[rule.binding] as NativeRateLimiter | undefined)
+    : undefined;
+  if (!limiter || typeof limiter.limit !== 'function') {
+    throw new Error(
+      `[duneta] missing Rate Limiting binding "${rule.binding ?? ''}"`,
+    );
+  }
+
+  const { success } = await limiter.limit({ key });
+  return {
+    allowed: success,
+    resetAt: Date.now() + rule.windowMs,
+  };
 }
 
 async function consumeLimit(
@@ -114,13 +152,16 @@ async function consumeLimit(
   storageKey: string,
   max: number,
   windowMs: number,
-): Promise<{ allowed: boolean; count: number; resetAt: number }> {
+): Promise<RateLimitResult> {
   const now = Date.now();
 
   if (cache) {
-    const count = await cache.incr(storageKey);
-    if (count === 1) await cache.expire(storageKey, windowMs);
-    return { allowed: count <= max, count, resetAt: now + windowMs };
+    const counter = await cache.incrWithTtl(storageKey, windowMs);
+    return {
+      allowed: counter.count <= max,
+      count: counter.count,
+      resetAt: now + counter.ttlMs,
+    };
   }
 
   const entry = memoryStore.get(storageKey);
@@ -146,23 +187,30 @@ function compileRule(rule: RateLimitRule): CompiledRule {
   };
 }
 
+function matchesStage(rule: RateLimitRule, stage: RateLimitStage) {
+  if (stage === 'all') return true;
+  const requiresAuth = rule.key === 'user' || rule.key === 'ip+user';
+  return stage === 'post-auth' ? requiresAuth : !requiresAuth;
+}
+
 export function createRateLimitMiddleware(
   config: RateLimitConfig,
   cache: Cache | null = null,
+  stage: RateLimitStage = 'all',
 ) {
-  const rules = activeRateLimitRules(config).map(compileRule);
+  const rules = activeRateLimitRules(config)
+    .filter((rule) => matchesStage(rule, stage))
+    .map(compileRule);
 
   return createMiddleware<RequestContext>(async (c, next) => {
     for (const rule of rules) {
       if (!matchesRule(c, rule)) continue;
 
       const keyPart = await resolveRateLimitKey(c, rule);
-      const { allowed, count, resetAt } = await consumeLimit(
-        cache,
-        `ratelimit:${rule.name}:${keyPart}`,
-        rule.max,
-        rule.windowMs,
-      );
+      const storageKey = `ratelimit:${rule.name}:${keyPart}`;
+      const { allowed, count, resetAt } = rule.binding
+        ? await consumeNativeLimit(c, rule, storageKey)
+        : await consumeLimit(cache, storageKey, rule.max, rule.windowMs);
 
       setRateLimitHeaders(c, rule, count, resetAt);
       if (!allowed) {

@@ -9,14 +9,14 @@ Route (ApiRoute.define + resolveController)
     ↓
 Controller (BaseController)
     ↓
-Repository (BaseRepository)
+Repository (BasePgRepository)
     ↓
 Drizzle → Postgres
 ```
 
 ## BaseController
 
-`packages/duneta/http/base-controller.ts`
+`packages/duneta/http/controllers/base-controller.ts`
 
 Helpers có sẵn:
 
@@ -57,11 +57,13 @@ export class PostController extends BaseController {
 
 Handler phải là **arrow function property** (`index = async (c) =>`) để `resolveController` gọi đúng `this`.
 
-## BaseRepository
+## BaseRepository và BasePgRepository
 
-`packages/duneta/http/base-repository.ts`
+`packages/duneta/http/repositories/`
 
-CRUD generic trên Drizzle table có cột `id`:
+`BaseRepository` chỉ cung cấp `await this.db(name?)` và không phụ thuộc driver.
+`BasePgRepository` kiểm tra connection có `driver: 'postgres'` trước khi mở client,
+sau đó cung cấp CRUD generic cho Drizzle PostgreSQL table có cột `id`:
 
 | Method               | Mô tả            |
 | -------------------- | ---------------- |
@@ -75,52 +77,78 @@ CRUD generic trên Drizzle table có cột `id`:
 
 ```ts
 // app/repositories/PostRepository.ts
-import { BaseRepository } from 'duneta/http';
+import { BasePgRepository } from 'duneta/http/repositories';
 import { post } from './Schemas/Post';
 
-export class PostRepository extends BaseRepository<typeof post> {
+export class PostRepository extends BasePgRepository<typeof post> {
   constructor() {
     super(post);
   }
 
   async findPublished() {
-    return this.db.select().from(post).where(eq(post.published, true));
+    const db = await this.db();
+    return db.select().from(post).where(eq(post.published, true));
   }
 }
 ```
 
-`db` được resolve theo từng request/scheduled invocation — repository chỉ cần truyền `table`.
+`await this.db()` mở client **lazy** cho request/scheduled invocation hiện tại —
+connection chỉ connect khi repository thật sự cần, và mọi repository trong cùng
+request dùng chung một client cho mỗi connection name (Repo1 gọi Repo2 không mở thêm).
 
 Nếu repository dùng database mặc định:
 
 ```ts
-export class PostRepository extends BaseRepository<typeof post> {
+export class PostRepository extends BasePgRepository<typeof post> {
   constructor() {
     super(post);
   }
 }
 ```
 
-Nếu repository dùng một connection khác trong `database.connections`, truyền tên connection
-ở tham số thứ hai. Ví dụ `analytics`:
+Nếu repository dùng connection khác trong `database.connections`, khai báo bằng
+`databases`; phần tử đầu tiên là mặc định của repository:
 
 ```ts
-export class AnalyticsRepository extends BaseRepository<typeof event> {
+// một connection duy nhất
+export class AnalyticsRepository extends BasePgRepository<typeof event> {
+  protected readonly databases = ['analytics'] as const;
+
   constructor() {
-    super(event, 'analytics');
+    super(event);
+  }
+}
+
+// nhiều connection — this.db() mặc định 'primary', this.db('analytics') khi cần
+export class ReportRepository extends BasePgRepository<typeof report> {
+  protected readonly databases = ['primary', 'analytics'] as const;
+
+  constructor() {
+    super(report);
+  }
+
+  async findRaw() {
+    const db = await this.db('analytics');
+    return db.select().from(report);
   }
 }
 ```
 
-Repository có thể là singleton. `this.db` không giữ client toàn cục mà lấy đúng client của
-request hoặc cron invocation hiện tại.
+Gọi `this.db(name)` với tên chưa khai báo sẽ throw. Repository có thể là singleton —
+client không giữ toàn cục mà thuộc về request hoặc cron invocation hiện tại. Framework
+đóng client sau khi handler xong **và** mọi `waitUntil` task đã settle — nên background
+work đăng ký qua `waitUntil` vẫn dùng được DB.
+
+Streaming / callback query **sau** khi handler return mà không gắn vào `waitUntil` sẽ
+thấy scope đã đóng. Mọi DB work kéo dài hơn response phải đi qua `c.executionCtx.waitUntil(...)`
+(HTTP) hoặc `ctx.waitUntil(...)` (cron).
 
 Schema Drizzle đặt trong `repositories/schemas/` hoặc `packages/duneta/repositories/schemas/` (auth schema ship sẵn).
 
 ## Đăng ký + route — checklist
 
 1. Tạo schema Drizzle (nếu table mới)
-2. Tạo `PostRepository extends BaseRepository`
+2. Tạo `PostRepository extends BasePgRepository`
 3. Tạo `PostController extends BaseController`
 4. Đăng ký trong `app/providers/app-service-provider.ts`
 5. Thêm `ApiRoute.define` trong `app/http/controllers/*/routes.ts`

@@ -34,10 +34,10 @@ export const post = pgTable('post', {
 
 ```ts
 // app/repositories/PostRepository.ts
-import { BaseRepository } from 'duneta/http';
+import { BasePgRepository } from 'duneta/http/repositories';
 import { post } from './Schemas/Post';
 
-export class PostRepository extends BaseRepository<typeof post> {
+export class PostRepository extends BasePgRepository<typeof post> {
   constructor() {
     super(post);
   }
@@ -48,6 +48,11 @@ export class PostRepository extends BaseRepository<typeof post> {
 
 ```ts
 // app/http/controllers/PostController.ts
+import type { Context } from 'hono';
+import { BaseController } from 'duneta/http';
+import type { RequestContext } from 'duneta/middleware/http';
+import type { PostRepository } from '../../repositories/PostRepository';
+
 export class PostController extends BaseController {
   constructor(private readonly posts: PostRepository) {
     super();

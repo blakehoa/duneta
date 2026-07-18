@@ -1,6 +1,9 @@
 import type { RedisStoreOptions } from '../../../config/server/cache.js';
 import type { CacheStore } from '../types.js';
 
+const INCR_WITH_TTL_SCRIPT =
+  "local count = redis.call('INCR', KEYS[1]); if count == 1 then redis.call('PEXPIRE', KEYS[1], ARGV[1]); end; return { count, redis.call('PTTL', KEYS[1]) }";
+
 async function redisHttpCommand(
   endpoint: string,
   token: string | undefined,
@@ -54,6 +57,19 @@ export function createRedisHttpStore(config: RedisStoreOptions): CacheStore {
     },
     incr: async (key) =>
       Number(await redisHttpCommand(endpoint, token, ['INCR', key])),
+    incrWithTtl: async (key, ttlMs) => {
+      const result = (await redisHttpCommand(endpoint, token, [
+        'EVAL',
+        INCR_WITH_TTL_SCRIPT,
+        1,
+        key,
+        ttlMs,
+      ])) as [number, number];
+      return {
+        count: Number(result[0]),
+        ttlMs: Math.max(0, Number(result[1])),
+      };
+    },
     del: async (key) => {
       await redisHttpCommand(endpoint, token, ['DEL', key]);
     },

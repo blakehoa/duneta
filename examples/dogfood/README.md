@@ -24,7 +24,21 @@ pnpm --filter dogfood deploy
 
 1. `config/server.ts` → `database.enabled: true` + `postgres('HYPERDRIVE')`
 2. Uncomment `hyperdrive` in `wrangler.jsonc` (local) and `wrangler.production.jsonc` (real id)
-3. `wrangler secret put AUTH_SECRET` / `CSRF_SECRET` if auth/csrf enabled
-4. `pnpm --filter dogfood deploy`
+3. App repositories extend `BasePgRepository` and use `await this.db()` (lazy Hyperdrive clients; no `database` on `ApiRoute`)
+4. `wrangler secret put AUTH_SECRET` / `CSRF_SECRET` if auth/csrf enabled
+5. `pnpm --filter dogfood deploy`
 
 `duneta deploy` aborts if generated config still has `localConnectionString` or a placeholder Hyperdrive id.
+
+### Repository sketch
+
+```ts
+import { BasePgRepository } from 'duneta/http/repositories';
+import { post } from './schemas/post';
+
+export class PostRepository extends BasePgRepository<typeof post> {
+  constructor() {
+    super(post);
+  }
+}
+```

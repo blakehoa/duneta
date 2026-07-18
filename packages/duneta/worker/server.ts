@@ -1,10 +1,16 @@
-import { createCronKernel, runDueCronJobs } from '../http/cron/index.js';
+import {
+  createCronKernel,
+  createCronEnsureDb,
+  runDueCronJobs,
+  unavailableCronDatabase,
+} from '../http/cron/index.js';
 import { isCronEnabled } from '../config/server/index.js';
 import {
-  openRequestDatabases,
-  runWithRequestDatabases,
+  createDatabaseScope,
+  runWithDatabaseScope,
   type WorkerEnv,
 } from '../http/database/index.js';
+import { isDatabaseEnabled } from '../config/server/features.js';
 import { loadApp, loadRuntimeServices } from './boot.js';
 import type { ServerOptions } from './types.js';
 import { loadServerConfig } from './load-config.js';
@@ -23,10 +29,16 @@ export type ScheduledControllerLike = {
 
 export type ExecutionContextLike = {
   waitUntil(promise: Promise<unknown>): void;
+  passThroughOnException(): void;
+  props: unknown;
 };
 
 export type ServerExport = {
-  fetch: (request: Request, env?: WorkerEnv) => Promise<Response>;
+  fetch: (
+    request: Request,
+    env?: WorkerEnv,
+    ctx?: ExecutionContextLike,
+  ) => Promise<Response>;
   scheduled: (
     controller: ScheduledControllerLike,
     env: unknown,
@@ -34,24 +46,27 @@ export type ServerExport = {
   ) => Promise<void>;
 };
 
+/** Create the cached HTTP and scheduled Worker handlers. */
 export function defineServer(options: ServerOptions): ServerExport {
   let boot: Promise<void> | undefined;
 
+  /** Load server configuration once per isolate. */
   async function ensureBoot() {
     if (!boot) boot = loadServerConfig().then(() => undefined);
     await boot;
   }
 
+  /** Run one handler after isolate boot completes. */
   async function withBoot<T>(run: () => Promise<T>): Promise<T> {
     await ensureBoot();
     return run();
   }
 
   return {
-    async fetch(request, env) {
+    async fetch(request, env, ctx) {
       return withBoot(async () => {
         const hono = await loadApp(options);
-        return hono.fetch(request, env);
+        return hono.fetch(request, env ?? undefined, ctx);
       });
     },
     async scheduled(controller, env, ctx) {
@@ -59,30 +74,39 @@ export function defineServer(options: ServerOptions): ServerExport {
         const runtime = await loadRuntimeServices(options);
         if (!isCronEnabled(runtime.config)) return;
 
-        const databases = await openRequestDatabases(
-          runtime.config,
-          env as WorkerEnv,
-        );
-        const db = databases[runtime.config.database.default] ?? null;
-        const auth = db ? runtime.auth : null;
+        const scope = isDatabaseEnabled(runtime.config)
+          ? createDatabaseScope(runtime.config, env as WorkerEnv)
+          : null;
 
         const kernel = await createCronKernel(runtime.registerCron);
-        await runWithRequestDatabases(
-          databases,
-          runtime.config.database.default,
-          () =>
-            runDueCronJobs(kernel.due(controller.cron), {
-              cron: controller.cron,
-              scheduledTime: controller.scheduledTime,
-              config: runtime.config,
-              db,
-              auth,
-              cache: runtime.cache,
-              controllers: runtime.controllers,
-              repositories: runtime.repositories,
-              waitUntil: (promise) => ctx.waitUntil(promise),
-            }),
-        );
+        const runJobs = () =>
+          runDueCronJobs(kernel.due(controller.cron), {
+            cron: controller.cron,
+            scheduledTime: controller.scheduledTime,
+            config: runtime.config,
+            // Facade — call `await ensureDb()` (or a repository) before using it.
+            db: scope ? runtime.db : null,
+            auth: scope ? runtime.auth : null,
+            cache: runtime.cache,
+            controllers: runtime.controllers,
+            repositories: runtime.repositories,
+            ensureDb: scope ? createCronEnsureDb() : unavailableCronDatabase,
+            waitUntil: (promise) => {
+              scope?.retain(promise);
+              ctx.waitUntil(promise);
+            },
+          });
+
+        if (!scope) {
+          await runJobs();
+          return;
+        }
+
+        try {
+          await runWithDatabaseScope(scope, runJobs);
+        } finally {
+          ctx.waitUntil(scope.close());
+        }
       });
     },
   };

@@ -1,6 +1,6 @@
 # Storage
 
-File: `packages/duneta/http/base-storage-controller.ts`
+File: `packages/duneta/http/controllers/base-storage-controller.ts`
 
 ```text
 StorageConfig → resolveBackend() → upload | head | delete

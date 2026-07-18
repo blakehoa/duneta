@@ -30,10 +30,14 @@
 import { AwsClient } from 'aws4fetch';
 import type { Context } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
-import type { CustomConfig, S3Config, StorageConfig } from '../config/server/storage.js';
-import { isStorageActive, storeOptions } from '../config/server/storage.js';
-import { HttpError } from '../permission/errors.js';
-import type { RequestContext } from '../middleware/http/request-context.js';
+import type {
+  CustomConfig,
+  S3Config,
+  StorageConfig,
+} from '../../config/server/storage.js';
+import { isStorageActive, storeOptions } from '../../config/server/storage.js';
+import type { RequestContext } from '../../middleware/http/request-context.js';
+import { HttpError } from '../../permission/errors.js';
 
 type StoreBody = NonNullable<RequestInit['body']>;
 

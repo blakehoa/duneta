@@ -3,6 +3,7 @@ import type { Cache } from '../cache/index.js';
 import type { DunetaServerConfig } from '../../config/server/types.js';
 import type { ControllerContainer } from '../container/controller-container.js';
 import type { RepositoryContainer } from '../container/repository-container.js';
+import { getInvocationDatabase } from '../database/invocation-context.js';
 import type { Database } from '../database/types.js';
 
 export type CronSchedule = string | readonly string[];
@@ -11,12 +12,18 @@ export type CronJobContext = {
   cron: string;
   scheduledTime: number;
   config: DunetaServerConfig;
+  /**
+   * Boot-time Drizzle facade. Open a connection with `ensureDb()` (or a
+   * repository) before calling methods on it — the facade is synchronous.
+   */
   db: Database | null;
   auth: Auth | null;
   cache: Cache;
   controllers: ControllerContainer;
   repositories: RepositoryContainer;
   waitUntil: (promise: Promise<unknown>) => void;
+  /** Lazily open (and share) a Hyperdrive client for this scheduled invocation. */
+  ensureDb: (name?: string) => Promise<Database>;
 };
 
 export abstract class BaseKernelCron {
@@ -93,4 +100,18 @@ export async function runDueCronJobs(
   }
 
   return due;
+}
+
+/** Default `ensureDb` when database is disabled for this invocation. */
+export function unavailableCronDatabase(): Promise<Database> {
+  return Promise.reject(
+    new Error(
+      '[duneta] database is not enabled for this scheduled invocation',
+    ),
+  );
+}
+
+/** Wire `ensureDb` to the current invocation scope. */
+export function createCronEnsureDb(): CronJobContext['ensureDb'] {
+  return (name) => getInvocationDatabase(name);
 }

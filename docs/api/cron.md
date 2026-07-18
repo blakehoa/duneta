@@ -33,11 +33,20 @@ export class DeleteUserSessionCron extends BaseKernelCron {
   readonly name = 'delete-user-session';
   readonly schedule = '0 0 * * *';
 
-  async handle({ cache, waitUntil }: CronJobContext) {
+  async handle({ cache, waitUntil, ensureDb, db }: CronJobContext) {
+    // Prefer repositories (`await this.db()`). If you need `ctx.db` facade:
+    await ensureDb();
+    void db;
+
     waitUntil(cache.set('cron:last-delete-user-session', String(Date.now())));
   }
 }
 ```
+
+`ensureDb(name?)` opens (and shares) a Hyperdrive client for this scheduled
+invocation. The `db` field is a **sync boot facade** — call `await ensureDb()`
+(or use a repository) before touching `db.*`. Background work registered with
+`waitUntil` keeps the database scope open until those promises settle.
 
 ## Register in the kernel
 

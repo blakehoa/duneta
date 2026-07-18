@@ -1,10 +1,13 @@
-export { BaseController } from './base-controller.js';
 export {
+  BaseController,
   BaseStorageController,
+  HealthController,
+  MeController,
   registerObjectStore,
+  resolveController,
+  StorageController,
   type StoredObjectMeta,
   type UploadOptions,
   type UploadResult,
-} from './base-storage-controller.js';
-export { resolveController } from './resolve-controller.js';
-export { HealthController, MeController, StorageController, UserController } from './controllers/index.js';
+  UserController,
+} from './controllers/index.js';

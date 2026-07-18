@@ -1,5 +1,6 @@
 import { getCookie } from 'hono/cookie';
 import { createMiddleware } from 'hono/factory';
+import type { Context } from 'hono';
 import type { DunetaServerConfig } from '../../config/server/types.js';
 import type { RequestContext } from './request-context.js';
 
@@ -7,47 +8,60 @@ function normalizeLocale(value: string) {
   return value.trim().toLowerCase();
 }
 
-function pickLocale(candidate: string | undefined, supported: string[], fallback: string) {
-  if (!candidate) return fallback;
-  const normalized = normalizeLocale(candidate);
-  const exact = supported.find((item) => normalizeLocale(item) === normalized);
-  if (exact) return exact;
+export function createLocaleResolver(config: DunetaServerConfig) {
+  const { locale } = config;
+  const { resolve } = locale;
+  const exact = new Map<string, string>();
+  const base = new Map<string, string>();
 
-  const base = normalized.split('-')[0];
-  const partial = supported.find((item) => normalizeLocale(item).startsWith(base));
-  return partial ?? fallback;
-}
-
-function parseAcceptLanguage(header: string | undefined, supported: string[], fallback: string) {
-  if (!header) return fallback;
-
-  for (const part of header.split(',')) {
-    const tag = part.split(';')[0]?.trim();
-    if (!tag) continue;
-    const match = pickLocale(tag, supported, '');
-    if (match) return match;
+  for (const supported of locale.supported) {
+    const normalized = normalizeLocale(supported);
+    exact.set(normalized, supported);
+    const language = normalized.split('-')[0];
+    if (language && !base.has(language)) base.set(language, supported);
   }
 
-  return fallback;
+  const pick = (candidate: string | undefined) => {
+    if (!candidate) return undefined;
+    const normalized = normalizeLocale(candidate);
+    return exact.get(normalized) ?? base.get(normalized.split('-')[0] ?? '');
+  };
+
+  return (c: Context<RequestContext>) => {
+    const fromQuery = resolve.query ? c.req.query(resolve.query) : undefined;
+    const fromCookie = resolve.cookie
+      ? getCookie(c, resolve.cookie)
+      : undefined;
+    const fromHeader = c.req.header(resolve.header);
+
+    if (fromQuery) return pick(fromQuery) ?? locale.default;
+    if (fromCookie) return pick(fromCookie) ?? locale.default;
+
+    if (fromHeader) {
+      for (const part of fromHeader.split(',')) {
+        const matched = pick(part.split(';')[0]?.trim());
+        if (matched) return matched;
+      }
+    }
+
+    return locale.default;
+  };
+}
+
+export function applyLocale(
+  c: Context<RequestContext>,
+  resolve: ReturnType<typeof createLocaleResolver>,
+) {
+  const locale = resolve(c);
+  c.set('locale', locale);
+  c.header('Content-Language', locale);
 }
 
 export function createLocaleMiddleware(config: DunetaServerConfig) {
-  const { locale } = config;
-  const { resolve } = locale;
+  const resolve = createLocaleResolver(config);
 
   return createMiddleware<RequestContext>(async (c, next) => {
-    const fromQuery = resolve.query ? c.req.query(resolve.query) : undefined;
-    const fromCookie = resolve.cookie ? getCookie(c, resolve.cookie) : undefined;
-    const fromHeader = c.req.header(resolve.header);
-
-    let resolved = locale.default;
-
-    if (fromQuery) resolved = pickLocale(fromQuery, locale.supported, locale.default);
-    else if (fromCookie) resolved = pickLocale(fromCookie, locale.supported, locale.default);
-    else if (fromHeader) resolved = parseAcceptLanguage(fromHeader, locale.supported, locale.default);
-
-    c.set('locale', resolved);
-    c.header('Content-Language', resolved);
+    applyLocale(c, resolve);
     await next();
   });
 }

@@ -47,6 +47,10 @@ export const cached = {
     return active.expire(key, ttlMs);
   },
 
+  incrWithTtl(key: string, ttlMs: number) {
+    return active.incrWithTtl(key, ttlMs);
+  },
+
   ping() {
     return active.ping();
   },

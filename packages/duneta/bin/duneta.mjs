@@ -135,10 +135,10 @@ function makeRepository(name) {
   const tableName = camel(name);
   writeNewFile(
     path.join(appRoot, 'repositories', `${kebab(name)}-repository.ts`),
-    `import { BaseRepository } from 'duneta/http';
+    `import { BasePgRepository } from 'duneta/http/repositories';
 // TODO: import your Drizzle table, e.g. \`import { ${tableName} } from '~/database/schemas/${kebab(name)}';\`
 
-export class ${className} extends BaseRepository<typeof ${tableName}> {
+export class ${className} extends BasePgRepository<typeof ${tableName}> {
   constructor() {
     super(${tableName});
   }
@@ -215,8 +215,10 @@ export class ${className} extends BaseKernelCron {
   readonly name = '${cronName}';
   readonly schedule = '0 0 * * *';
 
-  async handle(ctx: CronJobContext) {
-    void ctx;
+  async handle({ waitUntil, ensureDb }: CronJobContext) {
+    // Prefer repositories. If you need the sync \`db\` facade: await ensureDb() first.
+    void ensureDb;
+    void waitUntil;
   }
 }
 `,

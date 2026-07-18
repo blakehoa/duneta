@@ -4,7 +4,7 @@
 
 | | Core | Build sẵn |
 |---|------|-----------|
-| Ví dụ | `defineServer`, `defineServices`, `createDatabase`, `createAuth`, middleware | `HealthController`, `healthRoutes`, `UserRepository` |
+| Ví dụ | `defineServer`, `defineServices`, `createDatabases`, `createAuth`, middleware | `HealthController`, `healthRoutes`, `UserRepository` |
 | Bắt buộc? | Luôn (runtime) | Không — user import + mount nếu muốn |
 | Bật/tắt | Optional modules qua `config/server.ts` | N/A — chỉ chạy khi user register + mount route |
 

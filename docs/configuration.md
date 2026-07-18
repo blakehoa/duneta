@@ -9,10 +9,10 @@ config/server.ts  → Worker API only (lazy load lúc runtime)
 
 Vite **không** import server config → secrets không evaluate lúc web build.
 
-| File | Đọc bởi | Nội dung |
-|------|---------|----------|
-| `config/client.ts` | `loadConfig`, sync routers | `app`, `theme`, `api`, `locale`, `router`, `image` (sizes, quality) |
-| `config/server.ts` | `createDunetaWorker()` runtime load | `database`, `auth`, `image` (domains, cache), … |
+| File               | Đọc bởi                             | Nội dung                                                            |
+| ------------------ | ----------------------------------- | ------------------------------------------------------------------- |
+| `config/client.ts` | `loadConfig`, sync routers          | `app`, `theme`, `api`, `locale`, `router`, `image` (sizes, quality) |
+| `config/server.ts` | `createDunetaWorker()` runtime load | `database`, `auth`, `image` (domains, cache), …                     |
 
 Image optimization route is fixed at `/duneta/views/image` (`IMAGE_OPTIMIZATION_PATH`) — not in user config.
 
@@ -38,7 +38,15 @@ Khai báo trong `wrangler.jsonc`:
   "required": ["AUTH_SECRET", "CSRF_SECRET"]
 },
 "hyperdrive": [
-  { "binding": "HYPERDRIVE", "id": "<hyperdrive-id>" }
+  { "binding": "HYPERDRIVE", "id": "<cached-hyperdrive-id>" },
+  { "binding": "HYPERDRIVE_AUTH", "id": "<cache-disabled-hyperdrive-id>" }
+],
+"ratelimits": [
+  {
+    "name": "API_RATE_LIMITER",
+    "namespace_id": "1001",
+    "simple": { "limit": 100, "period": 60 }
+  }
 ]
 ```
 
@@ -54,7 +62,11 @@ export default createDunetaWorker();
 `config/server.ts` — chỉ API features + `process.env.*` cho secrets. **`app.name` / `app.env` không cần lặp** — `app.name` chỉ client; `app.env` server auto từ `process.env.NODE_ENV` (Wrangler `vars.NODE_ENV`).
 
 ```ts
-import { defineConnections, defineServerConfig, postgres } from 'duneta/config/server';
+import {
+  defineConnections,
+  defineServerConfig,
+  postgres,
+} from 'duneta/config/server';
 
 export default defineServerConfig({
   database: {
@@ -62,14 +74,76 @@ export default defineServerConfig({
     default: 'primary',
     connections: defineConnections({
       primary: postgres('HYPERDRIVE'),
+      auth: postgres('HYPERDRIVE_AUTH'),
       // analytics: postgres('HYPERDRIVE_ANALYTICS'),
     }),
   },
-  auth: { enabled: true, secret: process.env.AUTH_SECRET ?? '' },
+  auth: {
+    enabled: true,
+    database: 'auth',
+    secret: process.env.AUTH_SECRET ?? '',
+  },
+  security: {
+    cors: {
+      origins: ['https://app.example.com'],
+      credentials: true,
+    },
+  },
 });
 ```
 
 When `database.enabled`, every connection **must** use a Hyperdrive binding ([supported engines](https://developers.cloudflare.com/hyperdrive/reference/supported-databases-and-features/)). Extra DBs: `databases` in `registerServices`.
+Use a cache-disabled Hyperdrive configuration for `auth.database`; session and
+permission reads must not receive stale query-cache results.
+
+Connections open **lazily per repository**: nothing connects until a repository
+(or `resolveAuthSession`) first needs a connection, and every repository in the
+same request shares one client per connection name. Routes carry no database
+metadata:
+
+```ts
+ApiRoute.define({
+  path: '/orders',
+  middleware: [requireSession()],
+  endpoints: [
+    { method: 'GET', handler: resolveController('OrderController', 'index') },
+  ],
+});
+```
+
+Repositories declare which connections they may use:
+
+```ts
+export class AnalyticsRepository extends BasePgRepository<typeof event> {
+  protected readonly databases = ['primary', 'analytics'] as const;
+
+  constructor() {
+    super(event);
+  }
+
+  async findEvents() {
+    const db = await this.db('analytics');
+    return db.select().from(event);
+  }
+}
+```
+
+CORS for cookie auth:
+
+```ts
+security: {
+  cors: {
+    origins: ['https://app.example.com'],
+    credentials: true,
+    allowHeaders: ['X-Tenant-Id'],
+    maxAge: 600,
+  },
+}
+```
+
+For native Cloudflare rate limiting, set `binding` on the matching rate-limit
+rule to the Wrangler `ratelimits[].name`. Its `max`/`windowMs` must match the
+binding's `limit`/`period`.
 
 Verify sau build: `grep -r postgresql:// app/build/server/` → rỗng.
 
@@ -114,8 +188,8 @@ Cấu hình trong `config/server.ts`. Chi tiết storage: [storage](./api/storag
 
 ## Worker bindings
 
-| File | Purpose |
-|------|---------|
-| `wrangler.jsonc` | Local `duneta dev` |
-| `wrangler.production.jsonc` | `duneta build` / `duneta deploy` |
-| `app/build/server/wrangler.json` | Generated deploy artifact |
+| File                             | Purpose                          |
+| -------------------------------- | -------------------------------- |
+| `wrangler.jsonc`                 | Local `duneta dev`               |
+| `wrangler.production.jsonc`      | `duneta build` / `duneta deploy` |
+| `app/build/server/wrangler.json` | Generated deploy artifact        |

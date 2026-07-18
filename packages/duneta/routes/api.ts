@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import type { Hono as HonoType } from 'hono';
 import type { Handler, MiddlewareHandler } from 'hono';
 import type { DunetaServerConfig } from '../config/server/types.js';
-import { resolveController } from '../http/resolve-controller.js';
+import { resolveController } from '../http/controllers/resolve-controller.js';
 import { requireSession } from '../middleware/http/session.js';
 import type { RequestContext } from '../middleware/http/request-context.js';
 

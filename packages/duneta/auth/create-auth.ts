@@ -33,13 +33,20 @@ export function createAuth(
   config: DunetaServerConfig,
   db: Database | null,
   caches: Record<string, Cache> = {},
+  databases: Record<string, Database> = {},
 ): Auth | null {
+  const authDb = config.auth.database ? databases[config.auth.database] : db;
+
   if (config.auth?.enabled === true) {
-    if (!db) {
-      throw new Error('[duneta] auth.enabled requires database (Hyperdrive) to be available');
+    if (!authDb) {
+      throw new Error(
+        `[duneta] auth.enabled requires database "${config.auth.database ?? config.database.default}"`,
+      );
     }
     if (!config.auth.secret) {
-      throw new Error('[duneta] auth.enabled requires AUTH_SECRET (wrangler secret put AUTH_SECRET)');
+      throw new Error(
+        '[duneta] auth.enabled requires AUTH_SECRET (wrangler secret put AUTH_SECRET)',
+      );
     }
     if (!config.auth.baseUrl) {
       throw new Error(
@@ -48,7 +55,7 @@ export function createAuth(
     }
   }
 
-  if (!isAuthEnabled(config) || !db) return null;
+  if (!isAuthEnabled(config) || !authDb) return null;
 
   const { auth: authConfig } = config;
   const { providers, session } = authConfig;
@@ -74,7 +81,11 @@ export function createAuth(
       );
     }
     secondaryStorage = createSecondaryStorage(
-      resolveCache(caches, sessionCache.store, defaultCache(config.cache, caches)),
+      resolveCache(
+        caches,
+        sessionCache.store,
+        defaultCache(config.cache, caches),
+      ),
       sessionCache.key?.trim() || DEFAULT_SESSION_CACHE_KEY,
     );
   }
@@ -83,7 +94,7 @@ export function createAuth(
     secret: authConfig.secret,
     baseURL: authConfig.baseUrl,
     basePath: resolveAuthBasePath(authConfig.basePath),
-    database: drizzleAdapter(db, {
+    database: drizzleAdapter(authDb, {
       provider: 'pg',
       schema: {
         user: schema.user,
@@ -93,14 +104,15 @@ export function createAuth(
       },
     }),
     ...(secondaryStorage ? { secondaryStorage } : {}),
-    emailAndPassword: email.enabled !== false
-      ? {
-          enabled: true,
-          requireEmailVerification: email.requireEmailVerification ?? false,
-          minPasswordLength: email.minPasswordLength ?? 8,
-          disableSignUp: email.disableSignUp ?? false,
-        }
-      : { enabled: false },
+    emailAndPassword:
+      email.enabled !== false
+        ? {
+            enabled: true,
+            requireEmailVerification: email.requireEmailVerification ?? false,
+            minPasswordLength: email.minPasswordLength ?? 8,
+            disableSignUp: email.disableSignUp ?? false,
+          }
+        : { enabled: false },
     socialProviders,
     plugins,
     session: {

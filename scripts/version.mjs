@@ -13,10 +13,24 @@ function writeJson(path, value) {
 }
 
 function workspaceManifestPaths() {
-  const packageManifests = readdirSync(join(root, 'packages'), { withFileTypes: true })
+  const packageManifests = readdirSync(join(root, 'packages'), {
+    withFileTypes: true,
+  })
     .filter((entry) => entry.isDirectory())
     .map((entry) => join(root, 'packages', entry.name, 'package.json'));
-  return packageManifests;
+
+  let exampleManifests = [];
+  try {
+    exampleManifests = readdirSync(join(root, 'examples'), {
+      withFileTypes: true,
+    })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => join(root, 'examples', entry.name, 'package.json'));
+  } catch {
+    // No examples/ directory in this checkout.
+  }
+
+  return [...packageManifests, ...exampleManifests];
 }
 
 function assertVersion(version) {

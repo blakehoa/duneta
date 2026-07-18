@@ -63,9 +63,11 @@ function pickExport<T>(mod: Record<string, unknown>, names: string[]): T | undef
 }
 
 export async function resolveServerHandlers(options: ServerOptions): Promise<ResolvedServerHandlers> {
-  const servicesMod = options.services ? await options.services() : undefined;
-  const cronMod = options.cron ? await options.cron() : undefined;
-  const permissionsMod = options.permissions ? await options.permissions() : undefined;
+  const [servicesMod, cronMod, permissionsMod] = await Promise.all([
+    options.services?.(),
+    options.cron?.(),
+    options.permissions?.(),
+  ]);
 
   const registerServices =
     pickExport<RegisterServices>(servicesMod ?? {}, ['registerServices']) ?? noopRegisterServices;

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { Context } from 'hono';
-import { BaseController } from '../base-controller.js';
+import { BaseController } from './base-controller.js';
 import type { RequestContext } from '../../middleware/http/request-context.js';
 
 const meResponseSchema = z.object({

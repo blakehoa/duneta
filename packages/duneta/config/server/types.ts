@@ -93,6 +93,8 @@ export type AuthSessionConfig = {
 export type BetterAuthConfig = {
   enabled?: boolean;
   driver: 'better-auth';
+  /** Named database connection used for fresh auth/session reads. */
+  database?: string;
   secret: string;
   baseUrl: string;
   /** Path relative to `/api` mount (e.g. `/auth` → `/api/auth`). */
@@ -127,7 +129,19 @@ export type CsrfConfig = {
   excludePaths: string[];
 };
 
+export type CorsConfig = {
+  /** Exact origins allowed for browser requests. `*` disables credentials. */
+  origins: string[];
+  /** Send credential headers only when reflecting a concrete allowed origin. */
+  credentials: boolean;
+  /** Extra Access-Control-Allow-Headers beyond Duneta defaults. */
+  allowHeaders?: string[];
+  /** Access-Control-Max-Age in seconds for preflight caching. */
+  maxAge?: number;
+};
+
 export type SecurityConfig = {
+  cors: CorsConfig;
   rateLimit: RateLimitConfig;
   csrf: CsrfConfig;
 };

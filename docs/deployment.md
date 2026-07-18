@@ -83,9 +83,11 @@ export default defineServerConfig({
 ```
 
 Local: `localConnectionString` trên Hyperdrive binding trong `wrangler.jsonc`.  
-Mỗi HTTP request hoặc cron invocation dùng một `pg.Client` riêng. Không cấu hình `pg.Pool`
-trong Worker và không gọi `client.end()`; Hyperdrive quản lý connection pool phía database và
-Workers tự dọn edge connection khi invocation kết thúc.
+Mỗi HTTP request hoặc cron invocation mở `pg.Client` **lazy theo repository** — connection
+chỉ connect khi được dùng lần đầu và được chia sẻ trong cùng invocation. Connect timeout
+edge mặc định **5s**. Không cấu hình `pg.Pool` trong Worker; framework giữ client sống đến
+khi handler và mọi `waitUntil` task settle, rồi gọi `client.end()` (cũng qua `waitUntil`).
+Hyperdrive giữ pool phía database.
 
 Static assets (`app/build/client`) được gắn tự động trong `app/build/server/wrangler.json` khi `pnpm build`.
 

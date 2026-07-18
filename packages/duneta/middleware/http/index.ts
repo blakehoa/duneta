@@ -1,7 +1,10 @@
 import { createMiddleware } from 'hono/factory';
 import type { Context } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
-import type { DunetaServerConfig } from '../../config/server/types.js';
+import type {
+  CorsConfig,
+  DunetaServerConfig,
+} from '../../config/server/types.js';
 import { createLogger } from '../../http/logging/index.js';
 import { HttpError } from '../../permission/errors.js';
 import { createCsrfMiddleware } from './csrf.js';
@@ -26,29 +29,57 @@ export {
 };
 export type { AuthSession, AuthUser } from './types.js';
 
-export function createContextDefaultsMiddleware(config: DunetaServerConfig) {
-  return createMiddleware<RequestContext>(async (c, next) => {
-    c.set('requestId', '');
-    c.set('locale', config.locale.default);
-    c.set('timezone', config.timezone.default);
-    await next();
-  });
-}
+const DEFAULT_CORS_ALLOW_HEADERS = [
+  'Content-Type',
+  'Authorization',
+  'Accept-Language',
+  'X-Duneta-Timezone',
+  'X-Duneta-Locale',
+  'X-Request-Id',
+  'X-CSRF-Token',
+];
 
-export function createCorsMiddleware(origins: string[] = ['*']) {
-  return createMiddleware<RequestContext>(async (c, next) => {
-    const origin = c.req.header('Origin') ?? '*';
-    const allowed = origins.includes('*') || origins.includes(origin);
+export function createCorsMiddleware(
+  cors: CorsConfig = { origins: ['*'], credentials: false },
+) {
+  const origins = cors.origins.length > 0 ? cors.origins : ['*'];
+  const allowAll = origins.includes('*');
+  const allowHeaders = [
+    ...DEFAULT_CORS_ALLOW_HEADERS,
+    ...(cors.allowHeaders ?? []),
+  ];
+  const uniqueHeaders = [...new Set(allowHeaders)];
 
-    if (allowed) {
-      c.header('Access-Control-Allow-Origin', origins.includes('*') ? '*' : origin);
-      c.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  if (allowAll && cors.credentials) {
+    console.warn(
+      '[duneta] security.cors.credentials is ignored when origins includes "*"',
+    );
+  }
+
+  return createMiddleware<RequestContext>(async (c, next) => {
+    const origin = c.req.header('Origin');
+    const allowed = origin ? allowAll || origins.includes(origin) : false;
+
+    if (allowed && origin) {
+      c.header('Access-Control-Allow-Origin', allowAll ? '*' : origin);
       c.header(
-        'Access-Control-Allow-Headers',
-        'Content-Type, Authorization, Accept-Language, X-Duneta-Timezone, X-Duneta-Locale, X-Request-Id, X-CSRF-Token',
+        'Access-Control-Allow-Methods',
+        'GET,POST,PUT,PATCH,DELETE,OPTIONS',
       );
-      c.header('Access-Control-Expose-Headers', 'X-Request-Id, Content-Language, X-Duneta-Timezone');
-      c.header('Access-Control-Allow-Credentials', 'true');
+      c.header('Access-Control-Allow-Headers', uniqueHeaders.join(', '));
+      c.header(
+        'Access-Control-Expose-Headers',
+        'X-Request-Id, Content-Language, X-Duneta-Timezone',
+      );
+      if (cors.maxAge !== undefined) {
+        c.header('Access-Control-Max-Age', String(cors.maxAge));
+      }
+      if (!allowAll) {
+        c.header('Vary', 'Origin');
+        if (cors.credentials) {
+          c.header('Access-Control-Allow-Credentials', 'true');
+        }
+      }
     }
 
     if (c.req.method === 'OPTIONS') {
@@ -72,12 +103,21 @@ export function createErrorHandler(config: DunetaServerConfig) {
     });
 
     if (error instanceof HttpError) {
-      const message = debug || error.status < 500 ? error.message : 'Internal Server Error';
-      return c.json({ error: message, code: error.code }, error.status as ContentfulStatusCode);
+      const message =
+        debug || error.status < 500 ? error.message : 'Internal Server Error';
+      return c.json(
+        { error: message, code: error.code },
+        error.status as ContentfulStatusCode,
+      );
     }
 
-    const status = ('status' in error ? Number(error.status) : 500) as ContentfulStatusCode;
+    const status = (
+      'status' in error ? Number(error.status) : 500
+    ) as ContentfulStatusCode;
     const message = debug ? error.message : 'Internal Server Error';
-    return c.json({ error: message, code: 'INTERNAL_ERROR' }, status >= 400 && status < 600 ? status : 500);
+    return c.json(
+      { error: message, code: 'INTERNAL_ERROR' },
+      status >= 400 && status < 600 ? status : 500,
+    );
   };
 }

@@ -1,4 +1,7 @@
-import type { ExecutionContextLike, ScheduledControllerLike } from './server.js';
+import type {
+  ExecutionContextLike,
+  ScheduledControllerLike,
+} from './server.js';
 import { defineServer } from './server.js';
 import type { DunetaWorkerOptions, ServerOptions } from './types.js';
 
@@ -8,7 +11,11 @@ const ASSETS_BINDING = 'ASSETS';
 export type { DunetaWorkerOptions };
 
 export type DunetaWorkerExport = {
-  fetch: (request: Request, env: unknown, ctx: ExecutionContextLike) => Promise<Response>;
+  fetch: (
+    request: Request,
+    env: unknown,
+    ctx: ExecutionContextLike,
+  ) => Promise<Response>;
   scheduled: (
     controller: ScheduledControllerLike,
     env: unknown,
@@ -25,7 +32,9 @@ type ReactRouterModule = {
 };
 
 function viteMode(): string | undefined {
-  const env = (import.meta as ImportMeta & { env?: { PROD?: boolean; MODE?: string } }).env;
+  const env = (
+    import.meta as ImportMeta & { env?: { PROD?: boolean; MODE?: string } }
+  ).env;
   return env?.PROD ? 'production' : env?.MODE;
 }
 
@@ -66,7 +75,9 @@ function hasUnresolvedPaths(options: object): boolean {
  *   services: './app/providers/app-service-provider',
  * });
  */
-export function createDunetaWorker(options?: DunetaWorkerOptions): DunetaWorkerExport;
+export function createDunetaWorker(
+  options?: DunetaWorkerOptions,
+): DunetaWorkerExport;
 /** @internal Vite plugin output. */
 export function createDunetaWorker(options: ServerOptions): DunetaWorkerExport;
 export function createDunetaWorker(
@@ -84,14 +95,16 @@ export function createDunetaWorker(
   const web = createWebHandler();
 
   return {
-    async fetch(request, env) {
+    async fetch(request, env, ctx) {
       const { pathname } = new URL(request.url);
 
       if (pathname === '/api' || pathname.startsWith('/api/')) {
-        return api.fetch(request, env as Record<string, unknown>);
+        return api.fetch(request, env as Record<string, unknown>, ctx);
       }
 
-      const assets = (env as Record<string, { fetch: typeof fetch } | undefined>)[ASSETS_BINDING];
+      const assets = (
+        env as Record<string, { fetch: typeof fetch } | undefined>
+      )[ASSETS_BINDING];
       if (assets) {
         const response = await assets.fetch(request);
         if (response.status !== 404) return response;

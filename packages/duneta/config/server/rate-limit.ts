@@ -1,4 +1,9 @@
-export type RateLimitKey = 'ip' | 'user' | 'apiKey' | 'ip+user' | 'ip+identifier';
+export type RateLimitKey =
+  | 'ip'
+  | 'user'
+  | 'apiKey'
+  | 'ip+user'
+  | 'ip+identifier';
 
 export type RateLimitRule = {
   /** Unique name — used in counter keys and 429 responses. */
@@ -13,6 +18,11 @@ export type RateLimitRule = {
   methods?: string[];
   /** Header for `apiKey` strategy. Default: `x-api-key`. */
   apiKeyHeader?: string;
+  /**
+   * Cloudflare Workers Rate Limiting binding. Its Wrangler limit/period must
+   * match this rule. Omit to use the configured cache store.
+   */
+  binding?: string;
   /** Query param for `ip+identifier`. Default: `email`. */
   identifierQuery?: string;
   /** Header for `ip+identifier`. Default: `x-identifier`. */
@@ -35,12 +45,20 @@ export function rateLimitRule(rule: RateLimitRule): RateLimitRule {
   return { enabled: true, ...rule };
 }
 
-export function defineRateLimitRules(...rules: RateLimitRule[]): RateLimitRule[] {
+export function defineRateLimitRules(
+  ...rules: RateLimitRule[]
+): RateLimitRule[] {
   return rules;
 }
 
 export const DEFAULT_RATE_LIMIT_RULES = defineRateLimitRules(
-  rateLimitRule({ name: 'api', max: 100, windowMs: 60_000, key: 'ip' }),
+  rateLimitRule({
+    name: 'api',
+    max: 100,
+    windowMs: 60_000,
+    key: 'ip',
+    excludePaths: ['/health'],
+  }),
   rateLimitRule({
     name: 'auth',
     max: 5,
@@ -53,7 +71,13 @@ export const DEFAULT_RATE_LIMIT_RULES = defineRateLimitRules(
 );
 
 export function activeRateLimitRules(config: RateLimitConfig): RateLimitRule[] {
-  return (config.rules ?? DEFAULT_RATE_LIMIT_RULES).filter((rule) => rule.enabled !== false);
+  return (config.rules ?? DEFAULT_RATE_LIMIT_RULES).filter(
+    (rule) => rule.enabled !== false,
+  );
+}
+
+export function requiresRateLimitStore(config: RateLimitConfig): boolean {
+  return activeRateLimitRules(config).some((rule) => !rule.binding);
 }
 
 /** Sensible multi-hop rules for production APIs. */

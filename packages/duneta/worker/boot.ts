@@ -45,7 +45,17 @@ async function createRuntimeServices(
   const db = databases[config.database.default] ?? null;
   const caches = createCaches(config.cache);
   const cache = defaultCache(config.cache, caches);
-  const auth = createAuth(config, db, caches);
+  const auth = createAuth(config, db, caches, databases);
+
+  if (
+    config.auth?.enabled === true &&
+    config.app.env !== 'test' &&
+    !config.auth.database
+  ) {
+    console.warn(
+      '[duneta] auth.database is unset; sessions use the default Hyperdrive connection. Prefer a dedicated cache-disabled Hyperdrive for auth/session reads.',
+    );
+  }
 
   handlers.registerServices({
     controllers,
@@ -59,7 +69,6 @@ async function createRuntimeServices(
   const app = createHttpApp({
     router,
     config,
-    db,
     auth,
     cache,
     caches,

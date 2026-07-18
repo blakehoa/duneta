@@ -1,6 +1,6 @@
 import type { Context } from 'hono';
 import { UserPolicy } from '../../permission/policies/user-policy.js';
-import { BaseController } from '../base-controller.js';
+import { BaseController } from './base-controller.js';
 import type { RequestContext } from '../../middleware/http/request-context.js';
 import type { UserRepository } from '../repositories/user-repository.js';
 

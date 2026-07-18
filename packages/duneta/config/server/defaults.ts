@@ -96,6 +96,11 @@ export function createDefaultConfig(): DunetaServerConfig {
     storage: { enabled: false },
 
     security: {
+      cors: {
+        origins: ['*'],
+        credentials: false,
+        maxAge: 600,
+      },
       rateLimit: {
         enabled: false,
         rules: DEFAULT_RATE_LIMIT_RULES,
