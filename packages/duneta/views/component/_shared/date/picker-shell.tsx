@@ -77,9 +77,13 @@ export function PickerShell({
     <Popover isOpen={open} onOpenChange={handleOpenChange}>
       <div
         className={[
-          'flex min-h-9 w-full flex-row items-stretch overflow-hidden rounded-xl border bg-transparent',
-          isInvalid ? 'border-danger' : 'border-default',
-          disabled ? 'opacity-50' : '',
+          'flex min-h-[2.85rem] w-full flex-row items-stretch overflow-hidden border',
+          'rounded-[var(--field-radius)] bg-[var(--field-background)] text-[var(--field-foreground)]',
+          'focus-within:outline focus-within:outline-2 focus-within:outline-offset-[var(--ring-offset-width)]',
+          isInvalid
+            ? 'border-[var(--danger)] focus-within:outline-[var(--danger)]'
+            : 'border-[var(--field-border)] focus-within:outline-[var(--focus)]',
+          disabled ? 'opacity-[var(--disabled-opacity)]' : '',
           className ?? '',
         ]
           .filter(Boolean)
@@ -110,31 +114,33 @@ export function PickerShell({
           placeholder={placeholder}
           autoComplete="off"
           spellCheck={false}
-          className="min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 py-2 text-sm outline-none ring-0 placeholder:text-default-400 focus-visible:ring-0"
+          className="min-w-0 flex-1 rounded-none border-0 bg-transparent px-[0.85rem] py-[0.7rem] font-[inherit] text-[inherit] outline-none ring-0 placeholder:text-[var(--field-placeholder)] focus-visible:ring-0"
         />
         {allowClear && hasValue && !disabled ? (
-          <button
-            type="button"
-            aria-label={clearAriaLabel}
-            className="flex shrink-0 cursor-pointer items-center border-l border-default px-2 text-default-500 outline-none hover:bg-default-100"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => onClear?.()}
-          >
-            <X className="size-3.5" strokeWidth={2} />
-          </button>
+          <div className="flex shrink-0 items-center pr-1">
+            <button
+              type="button"
+              aria-label={clearAriaLabel}
+              className="flex size-7 cursor-pointer items-center justify-center rounded-full text-[var(--muted)] outline-none hover:bg-[var(--surface-hover)] hover:text-[var(--field-foreground)]"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => onClear?.()}
+            >
+              <X className="size-4" strokeWidth={2} />
+            </button>
+          </div>
         ) : null}
         <Popover.Trigger
           aria-label={triggerAriaLabel}
           aria-disabled={disabled || undefined}
           className={[
-            'flex shrink-0 items-center border-l border-default px-3 text-default-600 outline-none',
-            disabled ? 'pointer-events-none cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-default-100',
+            'flex shrink-0 items-center border-l border-[var(--border)] px-3 text-[var(--muted)] outline-none',
+            disabled ? 'pointer-events-none cursor-not-allowed opacity-[var(--disabled-opacity)]' : 'cursor-pointer hover:bg-[var(--surface-hover)] hover:text-[var(--field-foreground)]',
           ].join(' ')}
         >
           <Icon className="size-4" strokeWidth={2} />
         </Popover.Trigger>
       </div>
-      <Popover.Content className="p-0" placement="bottom start">
+      <Popover.Content className="p-0" placement="bottom end">
         <Popover.Dialog>{children}</Popover.Dialog>
       </Popover.Content>
     </Popover>

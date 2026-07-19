@@ -26,7 +26,7 @@ function MonthHeader({
       <button
         type="button"
         aria-label="Previous month"
-        className="inline-flex size-8 items-center justify-center rounded-lg text-default-600 outline-none hover:bg-default-100"
+        className="inline-flex size-8 items-center justify-center rounded-lg text-[var(--muted)] outline-none hover:bg-[var(--surface-hover)] hover:text-[var(--field-foreground)]"
         onClick={onPrev}
       >
         <ChevronLeft className="size-4" />
@@ -35,7 +35,7 @@ function MonthHeader({
       <button
         type="button"
         aria-label="Next month"
-        className="inline-flex size-8 items-center justify-center rounded-lg text-default-600 outline-none hover:bg-default-100"
+        className="inline-flex size-8 items-center justify-center rounded-lg text-[var(--muted)] outline-none hover:bg-[var(--surface-hover)] hover:text-[var(--field-foreground)]"
         onClick={onNext}
       >
         <ChevronRight className="size-4" />
@@ -43,6 +43,12 @@ function MonthHeader({
     </div>
   );
 }
+
+const accentSelected =
+  'bg-[var(--accent)] font-semibold text-[var(--accent-foreground)]';
+const accentSoft =
+  'bg-[var(--accent-soft)] font-medium text-[var(--accent)] hover:bg-[var(--accent-soft-hover)]';
+const accentRange = 'bg-[var(--accent-soft)]';
 
 export function CalendarPanel({
   ariaLabel,
@@ -74,7 +80,7 @@ export function CalendarPanel({
         onPrev={() => setMonth((current) => current.subtract(1, 'month'))}
         onNext={() => setMonth((current) => current.add(1, 'month'))}
       />
-      <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[11px] text-default-500">
+      <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[11px] text-[var(--muted)]">
         {labels.map((label) => (
           <div key={label}>{label}</div>
         ))}
@@ -93,9 +99,8 @@ export function CalendarPanel({
               aria-pressed={selected}
               className={[
                 'inline-flex size-8 items-center justify-center rounded-lg text-sm outline-none',
-                !inMonth ? 'text-default-300' : '',
-                today && !selected ? 'ring-1 ring-default-300' : '',
-                selected ? 'bg-primary text-primary-foreground' : 'hover:bg-default-100',
+                !inMonth ? 'text-[var(--muted)] opacity-60' : '',
+                selected ? accentSelected : today ? accentSoft : 'hover:bg-[var(--surface-hover)]',
                 disabled ? 'cursor-not-allowed opacity-40 hover:bg-transparent' : '',
               ]
                 .filter(Boolean)
@@ -160,7 +165,7 @@ export function RangeCalendarPanel({
         onPrev={() => setMonth((current) => current.subtract(1, 'month'))}
         onNext={() => setMonth((current) => current.add(1, 'month'))}
       />
-      <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[11px] text-default-500">
+      <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[11px] text-[var(--muted)]">
         {labels.map((label) => (
           <div key={label}>{label}</div>
         ))}
@@ -185,9 +190,9 @@ export function RangeCalendarPanel({
               aria-pressed={selected}
               className={[
                 'inline-flex size-8 items-center justify-center rounded-lg text-sm outline-none',
-                !inMonth ? 'text-default-300' : '',
-                inRange ? 'bg-primary/15' : '',
-                selected ? 'bg-primary text-primary-foreground' : 'hover:bg-default-100',
+                !inMonth ? 'text-[var(--muted)] opacity-60' : '',
+                inRange ? accentRange : '',
+                selected ? accentSelected : 'hover:bg-[var(--surface-hover)]',
                 disabled ? 'cursor-not-allowed opacity-40 hover:bg-transparent' : '',
               ]
                 .filter(Boolean)
@@ -224,13 +229,13 @@ function TimeWheel({
   }, [value]);
 
   return (
-    <div className="flex min-w-14 flex-col items-center gap-1">
-      <span className="text-[11px] text-default-500">{label}</span>
+    <div className="flex min-h-0 min-w-14 flex-col items-center gap-1">
+      <span className="text-[11px] text-[var(--muted)]">{label}</span>
       <div
         ref={listRef}
         role="listbox"
         aria-label={label}
-        className="h-36 w-full overflow-y-auto rounded-lg border border-default p-1"
+        className="min-h-0 w-full flex-1 overflow-y-auto rounded-lg border border-[var(--border)] p-1"
       >
         {options.map((option) => {
           const active = option === value;
@@ -243,7 +248,7 @@ function TimeWheel({
               data-active={active ? 'true' : undefined}
               className={[
                 'flex w-full items-center justify-center rounded-md py-1.5 text-sm outline-none',
-                active ? 'bg-primary text-primary-foreground' : 'hover:bg-default-100',
+                active ? accentSelected : 'hover:bg-[var(--surface-hover)]',
               ].join(' ')}
               onClick={() => onChange(option)}
             >
@@ -287,7 +292,7 @@ export function TimeFieldPanel({
   const minutes = Array.from({ length: 60 }, (_, index) => index);
 
   return (
-    <div aria-label={ariaLabel} className="flex items-end justify-center gap-2 p-3">
+    <div aria-label={ariaLabel} className="flex h-full items-stretch justify-center gap-2 p-3">
       <TimeWheel
         label="H"
         options={hours}
@@ -299,7 +304,7 @@ export function TimeFieldPanel({
           });
         }}
       />
-      <span className="pb-16 text-lg font-semibold text-default-500">:</span>
+      <span className="self-center text-lg font-semibold text-[var(--muted)]">:</span>
       <TimeWheel
         label="M"
         options={minutes}
@@ -307,9 +312,9 @@ export function TimeFieldPanel({
         onChange={(next) => onChange({ hour, minute: next })}
       />
       {hourCycle === 12 ? (
-        <div className="flex min-w-14 flex-col items-center gap-1">
-          <span className="text-[11px] text-default-500">AM/PM</span>
-          <div className="flex h-36 w-full flex-col gap-1 rounded-lg border border-default p-1">
+        <div className="flex min-h-0 min-w-14 flex-col items-center gap-1">
+          <span className="text-[11px] text-[var(--muted)]">AM/PM</span>
+          <div className="flex min-h-0 w-full flex-1 flex-col gap-1 rounded-lg border border-[var(--border)] p-1">
             {(['AM', 'PM'] as const).map((period) => {
               const active = period === 'PM' ? isPm : !isPm;
               return (
@@ -318,7 +323,7 @@ export function TimeFieldPanel({
                   type="button"
                   className={[
                     'flex flex-1 items-center justify-center rounded-md text-sm outline-none',
-                    active ? 'bg-primary text-primary-foreground' : 'hover:bg-default-100',
+                    active ? accentSelected : 'hover:bg-[var(--surface-hover)]',
                   ].join(' ')}
                   onClick={() =>
                     onChange({ hour: to24Hour(to12Hour(hour), period === 'PM'), minute })
@@ -331,6 +336,43 @@ export function TimeFieldPanel({
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+export function PickerFooterActions({
+  locale = 'vi-VN',
+  onToday,
+  onNow,
+}: {
+  locale?: string;
+  onToday?: () => void;
+  onNow?: () => void;
+}) {
+  const isVi = locale.toLowerCase().startsWith('vi');
+  const todayLabel = isVi ? 'Hôm nay' : 'Today';
+  const nowLabel = isVi ? 'Giờ hiện tại' : 'Now';
+  const actionClass =
+    'cursor-pointer rounded-lg px-2 py-1 text-sm font-medium text-[var(--accent)] outline-none hover:bg-[var(--accent-soft)]';
+
+  if (!onToday && !onNow) return null;
+
+  return (
+    <div className="flex items-center justify-between gap-2 border-t border-[var(--border)] px-3 py-2">
+      {onToday ? (
+        <button type="button" className={actionClass} onClick={onToday}>
+          {todayLabel}
+        </button>
+      ) : (
+        <span />
+      )}
+      {onNow ? (
+        <button type="button" className={actionClass} onClick={onNow}>
+          {nowLabel}
+        </button>
+      ) : (
+        <span />
+      )}
     </div>
   );
 }

@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { CalendarPanel, TimeFieldPanel } from '../_shared/date/calendar-panels';
+import {
+  CalendarPanel,
+  PickerFooterActions,
+  TimeFieldPanel,
+} from '../_shared/date/calendar-panels';
 import {
   dayjs,
   dayjsValueKey,
@@ -16,6 +20,11 @@ import { PickerShell } from '../_shared/date/picker-shell';
 import type { DunetaDateTimePickerProps } from './types';
 
 const DEFAULT_FORMAT = 'DD/MM/YYYY HH:mm';
+const VALUE_KEY_FORMAT = 'YYYY-MM-DD HH:mm';
+
+function emptyBase() {
+  return dayjs().hour(0).minute(0).second(0).millisecond(0);
+}
 
 export function DunetaDateTimePicker({
   value,
@@ -36,24 +45,27 @@ export function DunetaDateTimePicker({
   const isControlled = value !== undefined;
   const [inner, setInner] = useState<Dayjs | null>(defaultValue);
   const committed = isControlled ? (value ?? null) : inner;
-  const valueKey = dayjsValueKey(committed, 'YYYY-MM-DD HH:mm');
+  const valueKey = dayjsValueKey(committed, VALUE_KEY_FORMAT);
   const focusedRef = useRef(false);
   const [draft, setDraft] = useState(() => formatCommitted(committed, format));
   const [open, setOpen] = useState(false);
-
-  const draftBase = committed?.isValid()
-    ? committed
-    : dayjs().hour(0).minute(0).second(0).millisecond(0);
+  const [panelValue, setPanelValue] = useState<Dayjs | null>(null);
+  const panelValueRef = useRef<Dayjs | null>(null);
 
   useEffect(() => {
-    if (focusedRef.current) return;
+    if (focusedRef.current || open) return;
     setDraft(formatCommitted(committed, format));
-  }, [valueKey, format, committed]);
+  }, [valueKey, format, committed, open]);
 
   function setCommitted(next: Dayjs | null) {
     if (!isControlled) setInner(next);
     onChange?.(next);
     setDraft(formatCommitted(next, format));
+  }
+
+  function updatePanel(next: Dayjs | null) {
+    panelValueRef.current = next;
+    setPanelValue(next);
   }
 
   function restorePrevious() {
@@ -76,22 +88,36 @@ export function DunetaDateTimePicker({
     setCommitted(parsed);
   }
 
-  function handleCalendarChange(next: Dayjs) {
-    const merged = withDate(draftBase, next);
-    if (!isWithinRange(merged, minDate, maxDate, 'minute')) {
-      restorePrevious();
+  function handleOpenChange(next: boolean) {
+    if (next) {
+      const seed = committed?.isValid() ? committed : emptyBase();
+      updatePanel(seed);
+      setOpen(true);
       return;
     }
-    setCommitted(merged);
+
+    setOpen(false);
+    const picked = panelValueRef.current;
+    if (!picked?.isValid() || !isWithinRange(picked, minDate, maxDate, 'minute')) {
+      return;
+    }
+    if (dayjsValueKey(picked, VALUE_KEY_FORMAT) === valueKey) return;
+    setCommitted(picked);
+  }
+
+  const panelBase =
+    panelValue?.isValid() ? panelValue : committed?.isValid() ? committed : emptyBase();
+
+  function handleCalendarChange(next: Dayjs) {
+    const merged = withDate(panelBase, next);
+    if (!isWithinRange(merged, minDate, maxDate, 'minute')) return;
+    updatePanel(merged);
   }
 
   function handleTimeChange({ hour, minute }: { hour: number; minute: number }) {
-    const merged = withTime(draftBase, hour, minute);
-    if (!isWithinRange(merged, minDate, maxDate, 'minute')) {
-      restorePrevious();
-      return;
-    }
-    setCommitted(merged);
+    const merged = withTime(panelBase, hour, minute);
+    if (!isWithinRange(merged, minDate, maxDate, 'minute')) return;
+    updatePanel(merged);
   }
 
   return (
@@ -106,7 +132,7 @@ export function DunetaDateTimePicker({
         focusedRef.current = focused;
       }}
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={handleOpenChange}
       disabled={disabled}
       isInvalid={isInvalid}
       allowClear={allowClear}
@@ -116,20 +142,40 @@ export function DunetaDateTimePicker({
       className={className}
       icon="calendar"
     >
-      <div className="flex flex-col gap-1">
-        <CalendarPanel
-          ariaLabel={`${ariaLabel} date`}
-          value={committed?.isValid() ? committed : null}
-          onChange={handleCalendarChange}
-          minDate={toBoundDayjs(minDate)}
-          maxDate={toBoundDayjs(maxDate)}
+      <div className="flex flex-col">
+        <div className="relative flex flex-row">
+          <CalendarPanel
+            ariaLabel={`${ariaLabel} date`}
+            value={panelValue?.isValid() ? panelValue : null}
+            onChange={handleCalendarChange}
+            minDate={toBoundDayjs(minDate)}
+            maxDate={toBoundDayjs(maxDate)}
+            locale={locale}
+          />
+          {/* Calendar defines the popover height; the time panel is pinned to it. */}
+          <div className={hourCycle === 12 ? 'w-60 shrink-0' : 'w-40 shrink-0'}>
+            <div
+              className={[
+                'absolute inset-y-0 right-0',
+                hourCycle === 12 ? 'w-60' : 'w-40',
+              ].join(' ')}
+            >
+              <TimeFieldPanel
+                ariaLabel={`${ariaLabel} time`}
+                value={panelBase}
+                onChange={handleTimeChange}
+                hourCycle={hourCycle}
+              />
+            </div>
+          </div>
+        </div>
+        <PickerFooterActions
           locale={locale}
-        />
-        <TimeFieldPanel
-          ariaLabel={`${ariaLabel} time`}
-          value={committed?.isValid() ? committed : draftBase}
-          onChange={handleTimeChange}
-          hourCycle={hourCycle}
+          onToday={() => handleCalendarChange(dayjs().startOf('day'))}
+          onNow={() => {
+            const now = dayjs();
+            handleTimeChange({ hour: now.hour(), minute: now.minute() });
+          }}
         />
       </div>
     </PickerShell>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { CalendarPanel } from '../_shared/date/calendar-panels';
+import { CalendarPanel, PickerFooterActions } from '../_shared/date/calendar-panels';
 import {
+  dayjs,
   dayjsValueKey,
   formatCommitted,
   isWithinRange,
@@ -13,6 +14,7 @@ import { PickerShell } from '../_shared/date/picker-shell';
 import type { DunetaDatePickerProps } from './types';
 
 const DEFAULT_FORMAT = 'DD/MM/YYYY';
+const VALUE_KEY_FORMAT = 'YYYY-MM-DD';
 
 export function DunetaDatePicker({
   value,
@@ -32,20 +34,27 @@ export function DunetaDatePicker({
   const isControlled = value !== undefined;
   const [inner, setInner] = useState<Dayjs | null>(defaultValue);
   const committed = isControlled ? (value ?? null) : inner;
-  const valueKey = dayjsValueKey(committed, 'YYYY-MM-DD');
+  const valueKey = dayjsValueKey(committed, VALUE_KEY_FORMAT);
   const focusedRef = useRef(false);
   const [draft, setDraft] = useState(() => formatCommitted(committed, format));
   const [open, setOpen] = useState(false);
+  const [panelValue, setPanelValue] = useState<Dayjs | null>(null);
+  const panelValueRef = useRef<Dayjs | null>(null);
 
   useEffect(() => {
-    if (focusedRef.current) return;
+    if (focusedRef.current || open) return;
     setDraft(formatCommitted(committed, format));
-  }, [valueKey, format, committed]);
+  }, [valueKey, format, committed, open]);
 
   function setCommitted(next: Dayjs | null) {
     if (!isControlled) setInner(next);
     onChange?.(next);
     setDraft(formatCommitted(next, format));
+  }
+
+  function updatePanel(next: Dayjs | null) {
+    panelValueRef.current = next;
+    setPanelValue(next);
   }
 
   function restorePrevious() {
@@ -68,12 +77,23 @@ export function DunetaDatePicker({
     setCommitted(parsed);
   }
 
-  function handleCalendarChange(next: Dayjs) {
-    if (!isWithinRange(next, minDate, maxDate, 'day')) {
-      restorePrevious();
+  function handleOpenChange(next: boolean) {
+    if (next) {
+      updatePanel(committed?.isValid() ? committed : dayjs().startOf('day'));
+      setOpen(true);
       return;
     }
-    setCommitted(next.startOf('day'));
+
+    setOpen(false);
+    const picked = panelValueRef.current;
+    if (!picked?.isValid() || !isWithinRange(picked, minDate, maxDate, 'day')) return;
+    if (dayjsValueKey(picked, VALUE_KEY_FORMAT) === valueKey) return;
+    setCommitted(picked.startOf('day'));
+  }
+
+  function handleCalendarChange(next: Dayjs) {
+    if (!isWithinRange(next, minDate, maxDate, 'day')) return;
+    updatePanel(next.startOf('day'));
   }
 
   return (
@@ -88,7 +108,7 @@ export function DunetaDatePicker({
         focusedRef.current = focused;
       }}
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={handleOpenChange}
       disabled={disabled}
       isInvalid={isInvalid}
       allowClear={allowClear}
@@ -98,14 +118,20 @@ export function DunetaDatePicker({
       className={className}
       icon="calendar"
     >
-      <CalendarPanel
-        ariaLabel={ariaLabel}
-        value={committed?.isValid() ? committed : null}
-        onChange={handleCalendarChange}
-        minDate={toBoundDayjs(minDate)}
-        maxDate={toBoundDayjs(maxDate)}
-        locale={locale}
-      />
+      <div className="flex flex-col">
+        <CalendarPanel
+          ariaLabel={ariaLabel}
+          value={panelValue?.isValid() ? panelValue : null}
+          onChange={handleCalendarChange}
+          minDate={toBoundDayjs(minDate)}
+          maxDate={toBoundDayjs(maxDate)}
+          locale={locale}
+        />
+        <PickerFooterActions
+          locale={locale}
+          onToday={() => handleCalendarChange(dayjs().startOf('day'))}
+        />
+      </div>
     </PickerShell>
   );
 }
