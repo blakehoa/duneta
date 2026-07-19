@@ -100,16 +100,6 @@
     "dunetaName": "DunetaComboBox"
   },
   {
-    "folder": "DunetaDateField",
-    "heroName": "DateField",
-    "dunetaName": "DunetaDateField"
-  },
-  {
-    "folder": "DunetaDateRangePicker",
-    "heroName": "DateRangePicker",
-    "dunetaName": "DunetaDateRangePicker"
-  },
-  {
     "folder": "DunetaDescription",
     "heroName": "Description",
     "dunetaName": "DunetaDescription"

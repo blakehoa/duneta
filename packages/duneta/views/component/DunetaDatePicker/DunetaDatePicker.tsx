@@ -1,20 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
-import { RangeCalendarPanel } from '../_shared/date/calendar-panels';
+import { CalendarPanel } from '../_shared/date/calendar-panels';
 import {
-  formatRangeCommitted,
+  dayjsValueKey,
+  formatCommitted,
   isWithinRange,
-  parseRangeCommitted,
-  rangeValueKey,
+  parseCommitted,
   sanitizeDateTyping,
   toBoundDayjs,
+  type Dayjs,
 } from '../_shared/date/dayjs-date';
 import { PickerShell } from '../_shared/date/picker-shell';
-import type { DunetaDateRange, DunetaDateRangePickerProps } from './types';
+import type { DunetaDatePickerProps } from './types';
 
 const DEFAULT_FORMAT = 'DD/MM/YYYY';
-const DEFAULT_SEPARATOR = ' ~ ';
 
-export function DunetaDateRangePicker({
+export function DunetaDatePicker({
   value,
   defaultValue = null,
   onChange,
@@ -27,30 +27,29 @@ export function DunetaDateRangePicker({
   isInvalid,
   className,
   locale = 'vi-VN',
-  separator = DEFAULT_SEPARATOR,
-  'aria-label': ariaLabel = 'Date range',
-}: DunetaDateRangePickerProps) {
+  'aria-label': ariaLabel = 'Date',
+}: DunetaDatePickerProps) {
   const isControlled = value !== undefined;
-  const [inner, setInner] = useState<DunetaDateRange | null>(defaultValue);
+  const [inner, setInner] = useState<Dayjs | null>(defaultValue);
   const committed = isControlled ? (value ?? null) : inner;
-  const valueKey = rangeValueKey(committed, 'YYYY-MM-DD');
+  const valueKey = dayjsValueKey(committed, 'YYYY-MM-DD');
   const focusedRef = useRef(false);
-  const [draft, setDraft] = useState(() => formatRangeCommitted(committed, format, separator));
+  const [draft, setDraft] = useState(() => formatCommitted(committed, format));
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (focusedRef.current) return;
-    setDraft(formatRangeCommitted(committed, format, separator));
-  }, [valueKey, format, separator, committed]);
+    setDraft(formatCommitted(committed, format));
+  }, [valueKey, format, committed]);
 
-  function setCommitted(next: DunetaDateRange | null) {
+  function setCommitted(next: Dayjs | null) {
     if (!isControlled) setInner(next);
     onChange?.(next);
-    setDraft(formatRangeCommitted(next, format, separator));
+    setDraft(formatCommitted(next, format));
   }
 
   function restorePrevious() {
-    setDraft(formatRangeCommitted(committed, format, separator));
+    setDraft(formatCommitted(committed, format));
   }
 
   function commitFromString(raw: string) {
@@ -60,12 +59,8 @@ export function DunetaDateRangePicker({
       return;
     }
 
-    const parsed = parseRangeCommitted(trimmed, format, separator.trim());
-    if (
-      !parsed ||
-      !isWithinRange(parsed[0], minDate, maxDate, 'day') ||
-      !isWithinRange(parsed[1], minDate, maxDate, 'day')
-    ) {
+    const parsed = parseCommitted(trimmed, format, 'day');
+    if (!parsed || !isWithinRange(parsed, minDate, maxDate, 'day')) {
       restorePrevious();
       return;
     }
@@ -73,22 +68,19 @@ export function DunetaDateRangePicker({
     setCommitted(parsed);
   }
 
-  function handleRangeChange(next: DunetaDateRange) {
-    if (
-      !isWithinRange(next[0], minDate, maxDate, 'day') ||
-      !isWithinRange(next[1], minDate, maxDate, 'day')
-    ) {
+  function handleCalendarChange(next: Dayjs) {
+    if (!isWithinRange(next, minDate, maxDate, 'day')) {
       restorePrevious();
       return;
     }
-    setCommitted(next);
+    setCommitted(next.startOf('day'));
   }
 
   return (
     <PickerShell
       ariaLabel={ariaLabel}
       triggerAriaLabel={`${ariaLabel} — open calendar`}
-      placeholder={placeholder ?? `${format}${separator}${format}`}
+      placeholder={placeholder ?? format}
       text={draft}
       onTextChange={(next) => setDraft(sanitizeDateTyping(next))}
       onCommitText={commitFromString}
@@ -100,16 +92,16 @@ export function DunetaDateRangePicker({
       disabled={disabled}
       isInvalid={isInvalid}
       allowClear={allowClear}
-      hasValue={Boolean(committed?.[0]?.isValid() && committed[1]?.isValid())}
+      hasValue={Boolean(committed?.isValid())}
       onClear={() => setCommitted(null)}
       locale={locale}
       className={className}
       icon="calendar"
     >
-      <RangeCalendarPanel
+      <CalendarPanel
         ariaLabel={ariaLabel}
-        value={committed}
-        onChange={handleRangeChange}
+        value={committed?.isValid() ? committed : null}
+        onChange={handleCalendarChange}
         minDate={toBoundDayjs(minDate)}
         maxDate={toBoundDayjs(maxDate)}
         locale={locale}
