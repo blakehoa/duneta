@@ -18,12 +18,53 @@ export function resolveWranglerConfigPath(repoRoot: string): string {
   return path.resolve(repoRoot, 'wrangler.jsonc');
 }
 
+/**
+ * Framework deps pre-bundled at startup. Without this Vite discovers them
+ * mid-session, re-optimizes repeatedly and in-flight requests fail with
+ * "The file does not exist at node_modules/.vite/deps_ssr/…".
+ */
+const DUNETA_SHARED_DEPS = [
+  'duneta/http/client',
+  'duneta/query',
+  'duneta/views/component',
+  'duneta/views/component/DunetaInput',
+  'duneta/views/component/DunetaSelect',
+  'duneta/views/providers',
+  'dayjs',
+  'dayjs/plugin/customParseFormat',
+  'dayjs/plugin/duration',
+  'dayjs/plugin/timezone',
+  'dayjs/plugin/utc',
+  '@heroui/react',
+  '@tanstack/react-query',
+  'lucide-react',
+  'react-aria-components',
+];
+
+const DUNETA_CLIENT_DEPS = ['duneta/config/client/bootstrap'];
+
+const DUNETA_SSR_DEPS = [
+  'duneta/config/server',
+  'duneta/http',
+  'duneta/http/container',
+  'duneta/http/cron',
+  'duneta/http/repositories',
+  'hono/cookie',
+];
+
 export function createDunetaViteConfig(repoRoot: string, appRoot: string, overrides: UserConfig = {}): UserConfig {
+  const ssrOptimizeDeps = {
+    include: [...DUNETA_SHARED_DEPS, ...DUNETA_SSR_DEPS],
+  };
+
   return defineConfig({
     envDir: repoRoot,
     publicDir: path.resolve(appRoot, 'public'),
     server: {
       port: 8787,
+    },
+    optimizeDeps: {
+      include: [...DUNETA_SHARED_DEPS, ...DUNETA_CLIENT_DEPS],
     },
     plugins: [
       dunetaWorkerPlugin(repoRoot),
@@ -41,6 +82,12 @@ export function createDunetaViteConfig(repoRoot: string, appRoot: string, overri
     },
     ssr: {
       noExternal: [/^duneta(\/|$)/, /^@heroui\//],
+      optimizeDeps: ssrOptimizeDeps,
+    },
+    environments: {
+      ssr: {
+        optimizeDeps: ssrOptimizeDeps,
+      },
     },
     css: {
       devSourcemap: false,
